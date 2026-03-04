@@ -57,9 +57,10 @@ export const cyberGrungeTemplate: TemplateConfig = {
       color: '#ffffff', alpha: 0.4,
     }},
 
-    // Hero text — lyrics in monochrome
-    { type: 'heroText', layer: 'text', config: {
-      color: '#ffffff', fontSize: 72, strokeColor: '#000000', strokeWidth: 3,
+    // Glowing text cards — lyrics as individual character cards
+    { type: 'glowTextCards', layer: 'text', config: {
+      cardColor: '#ffffff', textColor: '#000000',
+      fontSize: 64, glowAlpha: 0.5, charsPerRow: 5,
     }},
 
     // Vignette — darkened edges

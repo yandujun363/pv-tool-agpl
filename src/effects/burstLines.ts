@@ -9,6 +9,9 @@ import { resolveColor } from '../core/types';
 export class BurstLines extends BaseEffect {
   readonly name = 'burstLines';
   private g!: PIXI.Graphics;
+  private drawn = false;
+  private lastW = 0;
+  private lastH = 0;
 
   protected setup(): void {
     this.g = new PIXI.Graphics();
@@ -16,6 +19,12 @@ export class BurstLines extends BaseEffect {
   }
 
   update(ctx: UpdateContext): void {
+    const isStatic = (this.config.rotSpeed ?? 0.05) === 0;
+    if (isStatic && this.drawn && this.lastW === ctx.screenWidth && this.lastH === ctx.screenHeight) return;
+    this.drawn = true;
+    this.lastW = ctx.screenWidth;
+    this.lastH = ctx.screenHeight;
+
     const g = this.g;
     g.clear();
 

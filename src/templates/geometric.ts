@@ -6,7 +6,7 @@ import type { TemplateConfig } from '../core/types';
 export const geometricTemplate: TemplateConfig = {
   name: '几何',
   palette: {
-    background: '#e8e4e0',
+    background: '#ffee00',
     primary: '#1a1a1a',
     secondary: '#ffffff',
     accent: '#888888',

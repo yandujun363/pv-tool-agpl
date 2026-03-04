@@ -14,6 +14,9 @@ import { resolveColor } from '../core/types';
 export class PerspectiveGrid extends BaseEffect {
   readonly name = 'perspectiveGrid';
   private g!: PIXI.Graphics;
+  private drawn = false;
+  private lastW = 0;
+  private lastH = 0;
 
   protected setup(): void {
     this.g = new PIXI.Graphics();
@@ -21,6 +24,13 @@ export class PerspectiveGrid extends BaseEffect {
   }
 
   update(ctx: UpdateContext): void {
+    const mode = this.config.mode ?? 'floor';
+    const isStatic = mode === 'full';
+    if (isStatic && this.drawn && this.lastW === ctx.screenWidth && this.lastH === ctx.screenHeight) return;
+    this.drawn = true;
+    this.lastW = ctx.screenWidth;
+    this.lastH = ctx.screenHeight;
+
     const g = this.g;
     g.clear();
 
@@ -28,7 +38,6 @@ export class PerspectiveGrid extends BaseEffect {
     const h = ctx.screenHeight;
     const color = resolveColor(this.config.color ?? '$primary', this.palette);
     const alpha = this.config.alpha ?? 0.3;
-    const mode = this.config.mode ?? 'floor';
     const lineWidth = this.config.lineWidth ?? 1;
     const spd = ctx.animationSpeed;
     const scrollSpeed = (this.config.scrollSpeed ?? 0.5) * spd;

@@ -93,6 +93,12 @@ export const effectCatalog: EffectPreset[] = [
   { type: 'noiseText', label: '乱码文字 NoiseText', layer: 'decoration', config: { count: 10, color: '#ffffff', bgColor: '#000000' } },
   { type: 'dataMonitors', label: '数据终端 Monitors', layer: 'decoration', config: { count: 4, borderColor: '#ffffff', fillColor: '#000000', dataColor: '#ffffff', alpha: 0.7 } },
 
+  // --- 线网 Web Lines ---
+  { type: 'webLines', label: '蛛网线 WebLines', layer: 'decoration', config: { count: 22, color: '#ff2222', glowColor: '#ff4444', focalX: 0.5, focalY: 0.45, spread: 0.25 } },
+
+  // --- 文字排列 Text Layout ---
+  { type: 'staggeredText', label: '错落文字 Staggered', layer: 'text', config: { color: '#ffffff', fontSize: 64, modeDuration: 3.5 } },
+
   // --- 动态检测 Motion Detection ---
   { type: 'motionBrackets', label: '运动框 Motion', layer: 'overlay', config: { color: '#00ffcc', alpha: 0.8, style: 'high' } },
 ];

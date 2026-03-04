@@ -22,6 +22,9 @@ type GuideName = 'thirds' | 'phi' | 'goldenSpiral' | 'diagonal' | 'center' | 'ba
 export class CompositionGuides extends BaseEffect {
   readonly name = 'compositionGuides';
   private g!: PIXI.Graphics;
+  private drawn = false;
+  private lastW = 0;
+  private lastH = 0;
 
   protected setup(): void {
     this.g = new PIXI.Graphics();
@@ -29,6 +32,11 @@ export class CompositionGuides extends BaseEffect {
   }
 
   update(ctx: UpdateContext): void {
+    if (this.drawn && this.lastW === ctx.screenWidth && this.lastH === ctx.screenHeight) return;
+    this.drawn = true;
+    this.lastW = ctx.screenWidth;
+    this.lastH = ctx.screenHeight;
+
     const g = this.g;
     g.clear();
 

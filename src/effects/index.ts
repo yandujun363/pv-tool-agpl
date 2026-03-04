@@ -60,6 +60,8 @@ import { OrganicBlob } from './organicBlob';
 import { NoiseText } from './noiseText';
 import { DataMonitors } from './dataMonitors';
 import { SmearBrush } from './smearBrush';
+import { WebLines } from './webLines';
+import { StaggeredText } from './staggeredText';
 
 type EffectConstructor = new () => BaseEffect;
 
@@ -124,6 +126,8 @@ register('organicBlob', OrganicBlob);
 register('noiseText', NoiseText);
 register('dataMonitors', DataMonitors);
 register('smearBrush', SmearBrush);
+register('webLines', WebLines);
+register('staggeredText', StaggeredText);
 
 export function createEffect(
   type: string,

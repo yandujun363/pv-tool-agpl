@@ -62,6 +62,9 @@ export class PVEngine {
   private _nativeDPR = 1;
   private _currentResolution = 1;
   private _resizeParent: HTMLElement | null = null;
+  private _loading = false;
+  private _bgColorOverride: string | null = null;
+  private _tick = 0;
 
   constructor() {
     this.app = new PIXI.Application();
@@ -113,40 +116,57 @@ export class PVEngine {
   }
 
   loadTemplate(template: TemplateConfig) {
-    this.clearEffects();
-    this.currentTemplate = template;
-    this.palette = { ...template.palette };
+    if (this._loading) return;
+    this._loading = true;
 
-    this.beat.bpm = template.bpm ?? 120;
-    this._outlineEnabled = template.features?.mediaOutline ?? false;
-    this._motionDetectionEnabled = template.features?.motionDetection ?? false;
-    this._invertMediaEnabled = template.features?.invertMedia ?? false;
-    this._thresholdMediaEnabled = template.features?.thresholdMedia ?? false;
-    this.syncMotionDetector();
-    this.syncInvertFilter();
+    try {
+      this.clearEffects();
+      this.currentTemplate = template;
+      this.palette = { ...template.palette };
 
-    if (template.features?.autoExtractColors && this.mediaElement && !this.extractingColors) {
-      this.applyExtractedColors();
-    }
+      this.beat.bpm = template.bpm ?? 120;
+      if (template.animationSpeed !== undefined) {
+        this._animationSpeed = template.animationSpeed;
+      }
+      this._outlineEnabled = template.features?.mediaOutline ?? false;
+      this._motionDetectionEnabled = template.features?.motionDetection ?? false;
+      this._invertMediaEnabled = template.features?.invertMedia ?? false;
+      this._thresholdMediaEnabled = template.features?.thresholdMedia ?? false;
+      this.syncMotionDetector();
+      this.syncInvertFilter();
 
-    this.app.renderer.background.color = new PIXI.Color(this.palette.background).toNumber();
-    this.updateBgFill();
-
-    for (const entry of template.effects) {
-      const layer = this.layers.get(entry.layer);
-      if (!layer) continue;
-
-      const config = { ...entry.config };
-      if (this.userText) {
-        config._userText = this.textSegments[0] || this.userText;
+      if (template.features?.autoExtractColors && this.mediaElement && !this.extractingColors) {
+        this.applyExtractedColors();
       }
 
-      const effect = createEffect(entry.type, layer, config, this.palette);
-      this.activeEffects.push(effect);
-    }
+      if (this._bgColorOverride) {
+        this.palette.background = this._bgColorOverride;
+      }
+      this.app.renderer.background.color = new PIXI.Color(this.palette.background).toNumber();
+      this.updateBgFill();
 
-    this.syncOutline();
-    this.syncResolution();
+      for (const entry of template.effects) {
+        const layer = this.layers.get(entry.layer);
+        if (!layer) continue;
+
+        const config = { ...entry.config };
+        if (this.userText) {
+          config._userText = this.textSegments[0] || this.userText;
+        }
+
+        try {
+          const effect = createEffect(entry.type, layer, config, this.palette);
+          this.activeEffects.push(effect);
+        } catch (err) {
+          console.warn(`[PVEngine] Failed to create effect "${entry.type}":`, err);
+        }
+      }
+
+      this.syncOutline();
+      this.syncResolution();
+    } finally {
+      this._loading = false;
+    }
   }
 
   setText(text: string) {
@@ -200,6 +220,20 @@ export class PVEngine {
   set beatReactivity(val: number) { this._beatReactivity = val; }
   get beatReactivity() { return this._beatReactivity; }
 
+  set canvasColor(color: string | null) {
+    this._bgColorOverride = color;
+    if (color) {
+      this.palette.background = color;
+      this.app.renderer.background.color = new PIXI.Color(color).toNumber();
+      this.updateBgFill();
+    } else if (this.currentTemplate) {
+      this.palette.background = this.currentTemplate.palette.background;
+      this.app.renderer.background.color = new PIXI.Color(this.palette.background).toNumber();
+      this.updateBgFill();
+    }
+  }
+  get canvasColor() { return this._bgColorOverride; }
+
   set hueShift(degrees: number) {
     this._hueShift = degrees;
     this.hueFilter.matrix = [1,0,0,0,0, 0,1,0,0,0, 0,0,1,0,0, 0,0,0,1,0];
@@ -208,82 +242,115 @@ export class PVEngine {
   get hueShift() { return this._hueShift; }
 
   async addMedia(file: File, mode: 'fit' | 'free' = 'fit'): Promise<void> {
+    if (this._loading) return;
+    this._loading = true;
+
     const url = URL.createObjectURL(file);
-    const mediaLayer = this.layers.get('media')!;
-    this.destroyOutline();
-    mediaLayer.removeChildren().forEach(c => c.destroy());
 
-    const isVideo = file.type.startsWith('video/');
+    try {
+      const mediaLayer = this.layers.get('media')!;
+      this.destroyOutline();
+      mediaLayer.removeChildren().forEach(c => c.destroy({ children: true }));
 
-    if (isVideo) {
-      const video = document.createElement('video');
-      video.src = url;
-      video.loop = true;
-      video.muted = true;
-      video.playsInline = true;
+      const isVideo = file.type.startsWith('video/');
 
-      await video.play();
-      this.mediaElement = video;
+      if (isVideo) {
+        const video = document.createElement('video');
+        video.src = url;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
 
-      const texture = PIXI.Texture.from(video);
-      const sprite = new PIXI.Sprite(texture);
+        await video.play();
+        this.mediaElement = video;
 
-      if (mode === 'fit') {
-        const scale = Math.max(
-          this.app.screen.width / video.videoWidth,
-          this.app.screen.height / video.videoHeight
-        );
-        sprite.scale.set(scale);
+        const texture = PIXI.Texture.from(video);
+        const sprite = new PIXI.Sprite(texture);
+
+        if (mode === 'fit') {
+          const scale = Math.max(
+            this.app.screen.width / video.videoWidth,
+            this.app.screen.height / video.videoHeight
+          );
+          sprite.scale.set(scale);
+        } else {
+          const scale = Math.min(
+            this.app.screen.width * 0.6 / video.videoWidth,
+            this.app.screen.height * 0.6 / video.videoHeight
+          );
+          sprite.scale.set(scale);
+        }
+
+        sprite.anchor.set(0.5);
+        sprite.x = this.app.screen.width / 2;
+        sprite.y = this.app.screen.height / 2;
+        mediaLayer.addChild(sprite);
       } else {
-        const scale = Math.min(
-          this.app.screen.width * 0.6 / video.videoWidth,
-          this.app.screen.height * 0.6 / video.videoHeight
-        );
-        sprite.scale.set(scale);
+        const img = new Image();
+        img.src = url;
+
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('Image load failed'));
+        });
+
+        // Downscale if image exceeds WebGL max texture size (typically 4096 or 8192)
+        const maxDim = 4096;
+        if (img.naturalWidth > maxDim || img.naturalHeight > maxDim) {
+          const downscale = maxDim / Math.max(img.naturalWidth, img.naturalHeight);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.naturalWidth * downscale);
+          canvas.height = Math.round(img.naturalHeight * downscale);
+          const dctx = canvas.getContext('2d')!;
+          dctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const smallImg = new Image();
+          smallImg.src = canvas.toDataURL();
+          await new Promise<void>((res) => { smallImg.onload = () => res(); });
+          this.mediaElement = smallImg;
+        } else {
+          this.mediaElement = img;
+        }
+
+        const texture = PIXI.Texture.from(this.mediaElement as HTMLImageElement);
+        const sprite = new PIXI.Sprite(texture);
+
+        if (mode === 'fit') {
+          const scale = Math.max(
+            this.app.screen.width / sprite.texture.width,
+            this.app.screen.height / sprite.texture.height
+          );
+          sprite.scale.set(scale);
+        } else {
+          const scale = Math.min(
+            this.app.screen.width * 0.6 / sprite.texture.width,
+            this.app.screen.height * 0.6 / sprite.texture.height
+          );
+          sprite.scale.set(scale);
+        }
+
+        sprite.anchor.set(0.5);
+        sprite.x = this.app.screen.width / 2;
+        sprite.y = this.app.screen.height / 2;
+        mediaLayer.addChild(sprite);
       }
 
-      sprite.anchor.set(0.5);
-      sprite.x = this.app.screen.width / 2;
-      sprite.y = this.app.screen.height / 2;
-      mediaLayer.addChild(sprite);
-    } else {
-      const img = new Image();
-      img.src = url;
-      await new Promise<void>((resolve) => { img.onload = () => resolve(); });
-      this.mediaElement = img;
-
-      const texture = PIXI.Texture.from(img);
-      const sprite = new PIXI.Sprite(texture);
-
-      if (mode === 'fit') {
-        const scale = Math.max(
-          this.app.screen.width / sprite.texture.width,
-          this.app.screen.height / sprite.texture.height
-        );
-        sprite.scale.set(scale);
-      } else {
-        const scale = Math.min(
-          this.app.screen.width * 0.6 / sprite.texture.width,
-          this.app.screen.height * 0.6 / sprite.texture.height
-        );
-        sprite.scale.set(scale);
+      if (this.currentTemplate?.features?.autoExtractColors) {
+        this.extractingColors = true;
+        this.applyExtractedColors();
+        this._loading = false;
+        this.loadTemplate(this.currentTemplate);
+        this.extractingColors = false;
+        return;
       }
 
-      sprite.anchor.set(0.5);
-      sprite.x = this.app.screen.width / 2;
-      sprite.y = this.app.screen.height / 2;
-      mediaLayer.addChild(sprite);
+      this.syncOutline();
+      this.syncMotionDetector();
+    } catch (err) {
+      console.warn('[PVEngine] addMedia failed:', err);
+    } finally {
+      URL.revokeObjectURL(url);
+      this._loading = false;
     }
-
-    if (this.currentTemplate?.features?.autoExtractColors) {
-      this.extractingColors = true;
-      this.applyExtractedColors();
-      this.loadTemplate(this.currentTemplate);
-      this.extractingColors = false;
-    }
-
-    this.syncOutline();
-    this.syncMotionDetector();
   }
 
   private applyExtractedColors(): void {
@@ -431,13 +498,12 @@ export class PVEngine {
 
   private clearEffects() {
     for (const e of this.activeEffects) {
-      e.destroy();
+      try { e.destroy(); } catch { /* already destroyed */ }
     }
     this.activeEffects = [];
-    // Safety: remove any orphaned children left over (shouldn't happen, but belt-and-suspenders)
     for (const [key, layer] of this.layers) {
       if (key !== 'media' && layer.children.length > 0) {
-        layer.removeChildren().forEach(c => c.destroy());
+        try { layer.removeChildren().forEach(c => c.destroy()); } catch { /* safe */ }
       }
     }
   }
@@ -476,8 +542,19 @@ export class PVEngine {
       this.outlineRenderer.update(this.mediaElement as HTMLVideoElement);
     }
 
+    this._tick++;
+
+    // Throttle heavy effects when many are active
+    const n = this.activeEffects.length;
+    const heavySkip = n > 15 ? 3 : n > 8 ? 2 : 0;
+
     for (const effect of this.activeEffects) {
-      effect.update(ctx);
+      try {
+        if (heavySkip && effect.heavy && this._tick % heavySkip !== 0) continue;
+        effect.update(ctx);
+      } catch (err) {
+        console.warn(`[PVEngine] Effect "${effect.name}" update error:`, err);
+      }
     }
   }
 

@@ -22,6 +22,7 @@ interface Monitor {
  */
 export class DataMonitors extends BaseEffect {
   readonly name = 'dataMonitors';
+  override readonly heavy = true;
   private g!: PIXI.Graphics;
   private monitors: Monitor[] = [];
 

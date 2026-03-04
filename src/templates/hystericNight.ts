@@ -16,7 +16,7 @@ import type { TemplateConfig } from '../core/types';
 export const hystericNightTemplate: TemplateConfig = {
   name: '歇斯底里之夜',
   palette: {
-    background: '#020408',
+    background: '#ffffff',
     primary: '#1133aa',
     secondary: '#2244cc',
     accent: '#cccc00',

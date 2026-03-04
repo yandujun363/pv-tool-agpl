@@ -22,6 +22,7 @@ export interface TemplateConfig {
   palette: ColorPalette;
   effects: EffectEntry[];
   bpm?: number;
+  animationSpeed?: number;
   features?: {
     mediaOutline?: boolean;
     autoExtractColors?: boolean;

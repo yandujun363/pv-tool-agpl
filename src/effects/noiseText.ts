@@ -33,6 +33,7 @@ const SYSTEM_FRAGMENTS = [
  */
 export class NoiseText extends BaseEffect {
   readonly name = 'noiseText';
+  override readonly heavy = true;
   private g!: PIXI.Graphics;
   private blocks: TextBlock[] = [];
   private tick = 0;

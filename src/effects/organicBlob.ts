@@ -26,6 +26,7 @@ interface BlobInstance {
  */
 export class OrganicBlob extends BaseEffect {
   readonly name = 'organicBlob';
+  override readonly heavy = true;
   private g!: PIXI.Graphics;
   private instances: BlobInstance[] = [];
 

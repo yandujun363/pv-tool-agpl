@@ -15,7 +15,7 @@ import type { TemplateConfig } from '../core/types';
  * - 18 scattered physics formula text elements
  */
 export const bluePlaneTemplate: TemplateConfig = {
-  name: '蓝色构成',
+  name: '蓝色构成(建议配合视频使用)',
   palette: {
     background: '#f0ece6',
     primary: '#0028B4',
@@ -88,15 +88,14 @@ export const bluePlaneTemplate: TemplateConfig = {
         fontFamily: '"SF Mono", "Fira Code", "Consolas", monospace',
       },
     },
-    // Main hero text
+    // Glowing text cards — characters as individual white cards
     {
-      type: 'heroText',
+      type: 'glowTextCards',
       layer: 'text',
       config: {
-        fontSize: 80, x: 0.5, y: 0.45,
-        color: '$text',
-        animation: 'breathe', animationSpeed: 0.2, animationAmount: 0.01,
-        letterSpacing: 15,
+        cardColor: '#ffffff', textColor: '$text',
+        fontSize: 72, glowAlpha: 0.5, charsPerRow: 5,
+        x: 0.5, y: 0.45,
       },
     },
   ],

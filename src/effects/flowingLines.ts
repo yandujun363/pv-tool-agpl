@@ -8,6 +8,7 @@ import { resolveColor } from '../core/types';
 
 export class FlowingLines extends BaseEffect {
   readonly name = 'flowingLines';
+  override readonly heavy = true;
   private graphics!: PIXI.Graphics;
 
   protected setup(): void {

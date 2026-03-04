@@ -9,7 +9,7 @@ import type { TemplateConfig } from '../core/types';
  * floating emotional text, thin elegant corner brackets on targets.
  */
 export const emotionCinemaTemplate: TemplateConfig = {
-  name: '情绪电影',
+  name: '情绪电影(建议配合视频使用)',
   palette: {
     background: '#0d1018',
     primary: '#c8c8d0',

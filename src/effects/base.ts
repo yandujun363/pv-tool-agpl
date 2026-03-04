@@ -6,6 +6,8 @@ import type { ColorPalette, UpdateContext } from '../core/types';
 
 export abstract class BaseEffect {
   abstract readonly name: string;
+  /** Mark as true for GPU/CPU-heavy effects — engine will skip frames when many effects are active */
+  readonly heavy: boolean = false;
   protected container!: PIXI.Container;
   protected config: Record<string, any> = {};
   protected palette!: ColorPalette;
@@ -24,7 +26,11 @@ export abstract class BaseEffect {
   abstract update(ctx: UpdateContext): void;
 
   destroy(): void {
-    this._ownContainer.removeChildren().forEach(c => c.destroy());
-    this._ownContainer.destroy();
+    try {
+      this._ownContainer.removeChildren().forEach(c => {
+        try { c.destroy({ children: true }); } catch { /* already gone */ }
+      });
+      this._ownContainer.destroy();
+    } catch { /* container already destroyed */ }
   }
 }

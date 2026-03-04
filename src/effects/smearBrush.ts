@@ -26,6 +26,7 @@ interface Stroke {
  */
 export class SmearBrush extends BaseEffect {
   readonly name = 'smearBrush';
+  override readonly heavy = true;
   private g!: PIXI.Graphics;
   private strokes: Stroke[] = [];
   private noiseCanvas!: HTMLCanvasElement;

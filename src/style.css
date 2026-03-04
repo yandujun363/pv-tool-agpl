@@ -229,6 +229,53 @@ input[type='range'] {
   min-width: 40px;
 }
 
+/* Canvas color swatches */
+.color-swatches {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  transition: border-color 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swatch:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.1);
+}
+
+.swatch-active {
+  border-color: #6688cc;
+  box-shadow: 0 0 6px rgba(102, 136, 204, 0.6);
+}
+
+.swatch-auto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(135deg, #333 50%, #888 50%);
+  border-radius: 3px;
+}
+
+/* Wrapper is transparent on desktop */
+.panels-wrapper {
+  display: contents;
+}
+
 /* Mobile toggle button — hidden on desktop */
 .mobile-toggle {
   display: none;
@@ -260,47 +307,57 @@ input[type='range'] {
     -webkit-tap-highlight-color: transparent;
   }
 
-  .controls,
-  .controls-right {
+  .panels-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     position: fixed;
-    top: auto;
+    bottom: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    border-radius: 12px 12px 0 0;
-    min-width: unset;
-    width: 100%;
-    max-height: 45vh;
+    z-index: 100;
+    max-height: 55vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 14px 16px;
-    gap: 10px;
     transition: transform 0.25s ease;
   }
 
-  .controls-right {
-    bottom: 0;
-  }
-
-  /* When hidden, slide panels off-screen */
-  .controls.controls-hidden,
-  .controls-right.controls-hidden {
+  .panels-wrapper.panels-hidden {
     transform: translateY(100%);
     pointer-events: none;
+  }
+
+  .controls,
+  .controls-right {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    border-radius: 0;
+    min-width: unset;
+    width: 100%;
+    max-height: none;
+    overflow-y: visible;
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .panels-wrapper > .controls:first-child {
+    border-radius: 12px 12px 0 0;
   }
 
   .controls-bottom {
+    position: relative;
+    top: auto;
+    left: auto;
+    bottom: auto;
+    transform: none;
     min-width: unset;
     width: 100%;
-    left: 0;
-    transform: none;
-    border-radius: 12px 12px 0 0;
-    max-height: 40vh;
-  }
-
-  .controls-bottom.controls-hidden {
-    transform: translateY(100%);
-    pointer-events: none;
+    border-radius: 0;
+    max-height: none;
+    overflow-y: visible;
   }
 
   /* Larger touch targets */

@@ -11,6 +11,7 @@ import type { UpdateContext } from '../core/types';
  */
 export class FilmGrain extends BaseEffect {
   readonly name = 'filmGrain';
+  override readonly heavy = true;
   private tiling!: PIXI.TilingSprite;
   private canvas!: HTMLCanvasElement;
   private ctx2d!: CanvasRenderingContext2D;

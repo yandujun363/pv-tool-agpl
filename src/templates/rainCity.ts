@@ -4,13 +4,13 @@
 import type { TemplateConfig } from '../core/types';
 
 export const rainCityTemplate: TemplateConfig = {
-  name: '城市、文字、雨',
+  name: '黑客帝国',
   palette: {
-    background: '#0a0a12',
-    primary: '#00ccaa',
-    secondary: '#006688',
-    accent: '#ee3344',
-    text: '#ee3344',
+    background: '#000000',
+    primary: '#003b00',
+    secondary: '#005500',
+    accent: '#00ff41',
+    text: '#00ff41',
   },
   effects: [
     {
