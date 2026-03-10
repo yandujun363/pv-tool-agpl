@@ -64,6 +64,8 @@ import { WebLines } from './webLines';
 import { StaggeredText } from './staggeredText';
 import { EdgeClouds } from './edgeClouds';
 import { PinkStripes } from './pinkStripes';
+import { JigsawGrid } from './jigsawGrid';
+import { PaperTear } from './paperTear';
 
 type EffectConstructor = new () => BaseEffect;
 
@@ -132,6 +134,8 @@ register('webLines', WebLines);
 register('staggeredText', StaggeredText);
 register('edgeClouds', EdgeClouds);
 register('pinkStripes', PinkStripes);
+register('jigsawGrid', JigsawGrid);
+register('paperTear', PaperTear);
 
 export function createEffect(
   type: string,

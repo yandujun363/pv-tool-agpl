@@ -2,6 +2,7 @@
 // Licensed under AGPL-3.0. For commercial use, see COMMERCIAL.md
 
 import type { TemplateConfig } from '../core/types';
+import { p5Template } from './p5';
 import { blueBoldTemplate } from './blueBold';
 import { kineticSplitTemplate } from './kineticSplit';
 import { bluePlaneTemplate } from './bluePlane';
