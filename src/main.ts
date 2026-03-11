@@ -361,7 +361,7 @@ function applyTextInput(rawText: string): void {
   }
 
   engine.clearLyricTimeline();
-  engine.setText(rawText.replace(/\n/g, '/'));
+  engine.setText(rawText.replace(/\r?\n/g, '/'));
 }
 
 textInput.addEventListener('input', () => {
