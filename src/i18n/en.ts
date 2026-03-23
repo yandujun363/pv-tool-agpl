@@ -232,4 +232,5 @@ export const en: Record<LocaleKey, string> = {
   'nwc_ws_addr_placeholder': 'Default localhost:8765',
   'nwc_save': 'Save',
   'nwc_saved': 'Saved',
+  'nwc_disconnected': 'WesingCap connection lost',
 };

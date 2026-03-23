@@ -233,4 +233,5 @@ export const ja: Record<LocaleKey, string> = {
   'nwc_ws_addr_placeholder': 'デフォルト localhost:8765',
   'nwc_save': '保存',
   'nwc_saved': '保存しました',
+  'nwc_disconnected': 'WesingCap 接続が切断されました',
 };
