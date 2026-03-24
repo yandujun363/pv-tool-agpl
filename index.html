@@ -4,24 +4,38 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>PV Tool - 日式PV Visual生成</title>
+    <title>PV Tool AGPL Community Edition - 日式PV Visual生成</title>
     <meta name="generator" content="solaris-0914">
-    <link rel="alternate" hreflang="zh" href="https://pv.pixjam.cn/" />
-    <link rel="alternate" hreflang="ja" href="https://pv.pixjam.cn/ja/" />
-    <link rel="alternate" hreflang="en" href="https://pv.pixjam.cn/en/" />
-    <link rel="alternate" hreflang="x-default" href="https://pv.pixjam.cn/en/" />
+    <link rel="alternate" hreflang="zh" href="https://pv-tool-agpl.yangdujun.top/?lang=zh" />
+    <link rel="alternate" hreflang="ja" href="https://pv-tool-agpl.yangdujun.top/?lang=ja" />
+    <link rel="alternate" hreflang="en" href="https://pv-tool-agpl.yangdujun.top/?lang=en" />
+    <link rel="alternate" hreflang="x-default" href="https://pv-tool-agpl.yangdujun.top/?lang=en" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <script>
-      // Set html lang based on URL path before render
-      if (window.location.pathname.includes('/ja')) {
-        document.documentElement.lang = 'ja';
-      } else if (window.location.pathname.includes('/en')) {
-        document.documentElement.lang = 'en';
-      } else {
-        document.documentElement.lang = 'zh';
-      }
+      // Set html lang based on URL parameter or path
+      (function() {
+        // 1. 优先读取 URL 参数 ?lang=xxx
+        const urlParams = new URLSearchParams(window.location.search);
+        let lang = urlParams.get('lang');
+        
+        // 2. 如果没有参数，再从路径判断 /ja/ /en/
+        if (!lang) {
+          if (window.location.pathname.includes('/ja')) {
+            lang = 'ja';
+          } else if (window.location.pathname.includes('/en')) {
+            lang = 'en';
+          }
+        }
+        
+        // 3. 默认中文
+        if (!lang) {
+          lang = 'zh';
+        }
+        
+        document.documentElement.lang = lang;
+      })();
     </script>
   </head>
   <body>
