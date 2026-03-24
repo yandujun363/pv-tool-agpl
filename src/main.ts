@@ -12,9 +12,9 @@ import {
   loadCustomTemplates,
   saveCustomTemplates,
   encodeShareCode,
-  decodeShareCode,
+  // decodeShareCode,
   encodeShareCodeJSON,
-  decodeShareCodeJSON,
+  // decodeShareCodeJSON,
   decodeShareCodeSmart
 } from './core/templateStore';
 import { testNowPlayingConnection } from './core/nowPlayingProvider';
