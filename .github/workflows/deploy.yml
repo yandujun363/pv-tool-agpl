@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # 包含 read + write，允许创建 Release
+  contents: write
   pages: write
   id-token: write
 
@@ -19,6 +19,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,30 +32,53 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-      - uses: actions/upload-pages-artifact@v3
+      # 判断是否需要部署到 Pages
+      - name: Check if should deploy
+        id: check
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+      # 只有 main 分支才上传 Pages artifact
+      - name: Upload Pages Artifact
+        if: steps.check.outputs.should_deploy == 'true'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
+      # 打包 Release 文件（只在 tag 时打包）
       - name: Package for Release
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           mkdir -p release-package/dist
           cp -r dist/* release-package/dist/
-          cp pv-tool-agpl_nginx.conf release-package/ 2>/dev/null || true
+          # 如果 nginx 配置文件存在则复制
+          if [ -f "pv-tool-agpl_nginx.conf" ]; then
+            cp pv-tool-agpl_nginx.conf release-package/
+          fi
           cd release-package
           zip -r ../pv-tool-agpl-${{ github.ref_name }}.zip .
           cd ..
+          
+          # 将 zip 文件移到更明确的位置
+          mkdir -p artifacts
+          mv pv-tool-agpl-*.zip artifacts/
 
+      # 上传打包文件供 Release 使用（只在 tag 时上传）
       - name: Upload Release Package
         if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
           name: release-package
-          path: pv-tool-agpl-*.zip
+          path: artifacts/pv-tool-agpl-*.zip  # 明确指定路径
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    if: needs.build.outputs.should_deploy == 'true'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -70,11 +95,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package
+          path: ./release-artifacts  # 明确指定下载路径
       
+      - name: List downloaded files
+        run: |
+          ls -la ./release-artifacts
+          
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: pv-tool-agpl-${{ github.ref_name }}.zip
+          files: ./release-artifacts/pv-tool-agpl-${{ github.ref_name }}.zip
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           body: |
