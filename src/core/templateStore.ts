@@ -127,3 +127,42 @@ export async function decodeShareCode(code: string): Promise<TemplateConfig> {
   }
   return template;
 }
+
+
+// ── JSON format (human-readable, no compression, no encryption) ──
+// yandujun363
+
+/**
+ * 导出为 JSON 格式（人类可读）
+ */
+export function encodeShareCodeJSON(template: TemplateConfig): string {
+  return JSON.stringify(template);
+}
+
+/**
+ * 从 JSON 格式导入
+ */
+export async function decodeShareCodeJSON(code: string): Promise<TemplateConfig> {
+  const template = JSON.parse(code) as TemplateConfig;
+  if (!template.name || !template.palette || !Array.isArray(template.effects)) {
+    throw new Error('Invalid template data');
+  }
+  return template;
+}
+
+/**
+ * 智能解码：自动检测是原版二进制还是 JSON
+ */
+export async function decodeShareCodeSmart(code: string): Promise<TemplateConfig> {
+  const trimmed = code.trim();
+  
+  // 尝试 JSON 格式：先测试整个字符串能否通过 JSON 解析
+  try {
+    JSON.parse(trimmed);
+    // JSON 解析成功，尝试解码为 TemplateConfig
+    return await decodeShareCodeJSON(trimmed);
+  } catch {
+    // JSON 解析失败或解码失败，回退到原版二进制格式
+    return await decodeShareCode(trimmed);
+  }
+}

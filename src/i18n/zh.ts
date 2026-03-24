@@ -102,6 +102,7 @@ export const zh = {
 
   // Sharecode & template management
   'export_code': '导出分享码',
+  'export_json_confirm': '导出为 JSON 格式（可读）？\n确定=JSON，取消=原版二进制',
   'import_code': '导入分享码',
   'import_btn': '导入',
   'code_copied': '分享码已复制到剪贴板',

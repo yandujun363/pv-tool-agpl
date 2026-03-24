@@ -13,6 +13,9 @@ import {
   saveCustomTemplates,
   encodeShareCode,
   decodeShareCode,
+  encodeShareCodeJSON,
+  decodeShareCodeJSON,
+  decodeShareCodeSmart
 } from './core/templateStore';
 import { testNowPlayingConnection } from './core/nowPlayingProvider';
 import { testWesingCapConnection } from './core/wesingCapProvider';
@@ -625,7 +628,16 @@ tplExportBtn.addEventListener('click', async () => {
   const val = templateSelect.value;
   if (!val.startsWith('user-')) return;
   const idx = parseInt(val.split('-')[1]);
-  const code = await encodeShareCode(customTemplates[idx]);
+  
+  const useJson = confirm(t('export_json_confirm'));
+  
+  let code: string;
+  if (useJson) {
+    code = encodeShareCodeJSON(customTemplates[idx]);
+  } else {
+    code = await encodeShareCode(customTemplates[idx]);
+  }
+  
   try { await navigator.clipboard.writeText(code); } catch { /* noop */ }
   showToast(t('code_copied'));
 });
@@ -644,7 +656,8 @@ shareCodeOk.addEventListener('click', async () => {
   const code = shareCodeText.value.trim();
   if (!code) return;
   try {
-    const tpl = await decodeShareCode(code);
+    // 智能解码：自动识别 JSON 或原版二进制
+    const tpl = await decodeShareCodeSmart(code);
     customTemplates.push(tpl);
     saveCustomTemplates(customTemplates);
     rebuildTemplateSelect();
