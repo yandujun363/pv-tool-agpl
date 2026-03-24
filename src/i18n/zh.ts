@@ -1,6 +1,6 @@
 export const zh = {
   // Page
-  'page_title': 'PV Tool - 日式PV Visual生成',
+  'page_title': 'PV Tool AGPL Community Edition - 日式PV Visual生成',
 
   // Panel titles
   'postfx': '後期 Post FX',
