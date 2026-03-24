@@ -1,9 +1,6 @@
-import { defineConfig } from 'vite';
-import FullReload from 'vite-plugin-full-reload';
-
 export default defineConfig({
-  base: process.env.VITE_BASE ?? '/pv-tool/',
-  plugins: [
-    FullReload(['src/**/*']),
-  ],
-});
+  base: process.env.GITHUB_REPOSITORY 
+    ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/`
+    : (process.env.VITE_BASE ?? '/'),
+  plugins: [FullReload(['src/**/*'])],
+})
