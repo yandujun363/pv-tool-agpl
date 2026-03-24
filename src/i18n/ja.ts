@@ -104,6 +104,7 @@ export const ja: Record<LocaleKey, string> = {
 
   // Sharecode & template management
   'export_code': 'シェアコード出力',
+  'export_json_confirm': 'JSON形式でエクスポート（可読）？\nOK=JSON、キャンセル=従来のバイナリ',
   'import_code': 'シェアコード入力',
   'import_btn': '読込',
   'code_copied': 'シェアコードをクリップボードにコピーしました',

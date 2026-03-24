@@ -104,6 +104,7 @@ export const en: Record<LocaleKey, string> = {
 
   // Sharecode
   'export_code': 'Export Code',
+  'export_json_confirm': 'Export as JSON format (readable)?\nOK=JSON, Cancel=legacy binary',
   'import_code': 'Import Code',
   'import_btn': 'Import',
   'code_copied': 'Share code copied to clipboard',
