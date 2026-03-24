@@ -42,4 +42,64 @@
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
+  <!-- 统计代码：只在 pv-tool-agpl.yangdujun.top 域名下加载 -->
+  <script>
+    if (window.location.hostname === 'pv-tool-agpl.yangdujun.top') {
+      // 动态加载统计模块
+      (function() {
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.textContent = `
+          import AnalyticsConsent from "https://cdn.yangdujun.top/js/ac.js";
+          import { PingMonitor } from "https://cdn.yangdujun.top/js/ac.js";
+          
+          const pingMonitor = new PingMonitor();
+          let customEventTriggered = false;
+          
+          document.addEventListener("DOMContentLoaded", function () {
+            const analytics = new AnalyticsConsent({
+              umamiUrl: "https://js.yangdujun.top/version.js",
+              websiteId: "6eeaf9bf-26c6-470c-bf94-23f4cdb66e40",
+              enableEuDetection: false
+              theme: "auto",
+              onConsentChange: function (consent, isEUUser, source) {
+                console.log("用户选择:", consent ? "同意" : "拒绝", "来源:", source, "欧盟:", isEUUser);
+                
+                if (consent && !customEventTriggered) {
+                  customEventTriggered = true;
+                  sendConsentEvent(source, isEUUser);
+                }
+              },
+            });
+            
+            function sendConsentEvent(source, isEUUser) {
+              console.log("发送同意事件，包含标题信息");
+              const eventData = {
+                title: document.title,
+                url: window.location.href,
+                source: source,
+                eu_user: isEUUser,
+                language: navigator.language,
+                referrer: document.referrer || "direct",
+                time: new Date().toLocaleString("zh-CN"),
+                usergent: navigator.userAgent
+              };
+              
+              const waitForUmami = setInterval(() => {
+                if (window.umami) {
+                  clearInterval(waitForUmami);
+                  pingMonitor.start();
+                  umami.track("consent_approved", eventData);
+                  console.log("✅ 同意事件已发送:", eventData);
+                }
+              }, 100);
+              
+              setTimeout(() => clearInterval(waitForUmami), 10000);
+            }
+          });
+        `;
+        document.head.appendChild(script);
+      })();
+    }
+  </script>
 </html>
