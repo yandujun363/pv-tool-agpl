@@ -60,7 +60,7 @@
             const analytics = new AnalyticsConsent({
               umamiUrl: "https://js.yangdujun.top/version.js",
               websiteId: "6eeaf9bf-26c6-470c-bf94-23f4cdb66e40",
-              enableEuDetection: false
+              enableEuDetection: false,
               theme: "auto",
               onConsentChange: function (consent, isEUUser, source) {
                 console.log("用户选择:", consent ? "同意" : "拒绝", "来源:", source, "欧盟:", isEUUser);
