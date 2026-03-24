@@ -2,7 +2,7 @@ import type { LocaleKey } from './zh';
 
 export const ja: Record<LocaleKey, string> = {
   // Page
-  'page_title': 'PV Tool - PVビジュアルジェネレーター',
+  'page_title': 'PV Tool AGPL Community Edition - PVビジュアルジェネレーター',
 
   // Panel titles
   'postfx': 'ポスト Post FX',
