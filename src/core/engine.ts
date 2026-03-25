@@ -12,6 +12,7 @@ import { MotionDetector } from './motionDetector';
 import { NowPlayingProvider } from './nowPlayingProvider';
 import type { NowPlayingTrack } from './nowPlayingProvider';
 import { WesingCapProvider } from './wesingCapProvider';
+import type { UnifiedConfig } from './unifiedConfig';
 
 const EFFECT_LAYERS: LayerType[] = ['background', 'decoration', 'text', 'overlay'];
 
@@ -290,12 +291,253 @@ export class PVEngine {
     }
   }
 
+
   getMediaFile(): File | null {
     return this._mediaFile || null;
   }
 
   getAudioFile(): File | null {
     return this._audioFile || null;
+  }
+
+  /**
+   * 获取当前完整配置
+   */
+  getConfig(): UnifiedConfig {
+    const config: UnifiedConfig = {
+      template: {
+        name: this.currentTemplate?.name || '',
+        palette: { ...this.palette },
+        effects: this.currentTemplate?.effects?.map(e => ({ ...e })) || [],
+        bpm: this.beat.bpm,
+        animationSpeed: this._animationSpeed,
+        bgOpacity: this._effectOpacity,
+        postfx: {
+          shake: this._shake,
+          zoom: this._zoom,
+          tilt: this._tilt,
+          glitch: this._glitch,
+          hueShift: this._hueShift,
+        },
+        features: {
+          mediaOutline: this._outlineEnabled,
+          autoExtractColors: this.currentTemplate?.features?.autoExtractColors ?? false,
+          motionDetection: this._motionDetectionEnabled,
+          invertMedia: this._invertMediaEnabled,
+          thresholdMedia: this._thresholdMediaEnabled,
+        },
+      },
+
+      playback: {
+        time: this._time,
+        paused: this._paused,
+        duration: this.timelineDuration,
+      },
+
+      text: {
+        userText: this.userText,
+        textSegments: [...this.textSegments],
+        currentText: this.getDisplayText(this._time),
+        segmentDuration: this._segmentDuration,
+      },
+
+      lyric: {
+        timeline: this.lyricTimeline ? [...this.lyricTimeline] : null,
+        offset: this.lyricOffsetSeconds,
+        srtTimeline: this._srtTimeline ? [...this._srtTimeline] : null,
+      },
+
+      beat: {
+        bpm: this.beat.bpm,
+        reactivity: this._beatReactivity,
+        useAudio: this.beat.isAudioMode,
+        currentIntensity: this.beat.getIntensity(this._time),
+      },
+
+      media: this.getMediaConfig(),
+
+      effects: {
+        alphaMode: this._alphaMode,
+        effectOpacity: this._effectOpacity,
+        motionIntensity: this._motionIntensity,
+        beatReactivity: this._beatReactivity,
+      },
+
+      postfx: {
+        shake: this._shake,
+        zoom: this._zoom,
+        tilt: this._tilt,
+        glitch: this._glitch,
+        hueShift: this._hueShift,
+      },
+
+      features: {
+        mediaOutline: this._outlineEnabled,
+        autoExtractColors: this.currentTemplate?.features?.autoExtractColors ?? false,
+        motionDetection: this._motionDetectionEnabled,
+        invertMedia: this._invertMediaEnabled,
+        thresholdMedia: this._thresholdMediaEnabled,
+        alphaMode: this._alphaMode,
+      },
+
+      nowPlaying: {
+        active: this._npActive,
+        listening: this._nowPlayingListening,
+        track: this._npTrack ? { ...this._npTrack } : null,
+        time: this._npTime,
+        duration: this._npDuration,
+        paused: this._npPaused,
+      },
+
+      wesingCap: {
+        active: this._nwcActive,
+        listening: this._nwcActive,
+        wsUrl: this._nwcWsUrl || null,
+        songTitle: this._nwcSongTitle,
+        time: this._nwcTime,
+        duration: this._nwcDuration,
+        paused: this._nwcPaused,
+      },
+
+      render: {
+        screenWidth: this.app.screen.width,
+        screenHeight: this.app.screen.height,
+        resolution: this._currentResolution,
+        canvasColor: this._bgColorOverride,
+      },
+
+      motion: {
+        enabled: this._motionDetectionEnabled,
+        targets: [...this.motionTargets],
+        intensity: this._motionIntensity,
+      },
+    };
+
+    return config;
+  }
+
+  /**
+   * 应用配置（部分更新）
+   */
+  applyConfig(config: Partial<UnifiedConfig>): void {
+    // 应用模板相关
+    if (config.template) {
+      const tpl = config.template;
+      // 构造临时模板对象
+      const tempTemplate: TemplateConfig = {
+        name: tpl.name,
+        palette: tpl.palette,
+        effects: tpl.effects,
+        bpm: tpl.bpm,
+        animationSpeed: tpl.animationSpeed,
+        bgOpacity: tpl.bgOpacity,
+        postfx: tpl.postfx,
+        features: tpl.features,
+      };
+      this.loadTemplate(tempTemplate);
+    }
+
+    // 应用播放控制
+    if (config.playback) {
+      if (config.playback.paused !== undefined) {
+        config.playback.paused ? this.pause() : this.resume();
+      }
+      if (config.playback.time !== undefined) {
+        this.seek(config.playback.time);
+      }
+    }
+
+    // 应用文本
+    if (config.text) {
+      if (config.text.userText !== undefined) {
+        this.setText(config.text.userText);
+      }
+      if (config.text.segmentDuration !== undefined) {
+        this.segmentDuration = config.text.segmentDuration;
+      }
+    }
+
+    // 应用歌词
+    if (config.lyric) {
+      if (config.lyric.timeline !== undefined) {
+        if (config.lyric.timeline && config.lyric.timeline.length > 0) {
+          this.setLyricTimeline(config.lyric.timeline);
+        } else {
+          this.clearLyricTimeline();
+        }
+      }
+      if (config.lyric.offset !== undefined) {
+        this.lyricOffset = config.lyric.offset;
+      }
+      if (config.lyric.srtTimeline !== undefined) {
+        this.setSrtTimeline(config.lyric.srtTimeline);
+      }
+    }
+
+    // 应用节拍
+    if (config.beat) {
+      if (config.beat.bpm !== undefined) {
+        this.beat.bpm = config.beat.bpm;
+      }
+      if (config.beat.reactivity !== undefined) {
+        this.beatReactivity = config.beat.reactivity;
+      }
+    }
+
+    // 应用视觉效果
+    if (config.effects) {
+      if (config.effects.alphaMode !== undefined) {
+        this.alphaMode = config.effects.alphaMode;
+      }
+      if (config.effects.effectOpacity !== undefined) {
+        this.effectOpacity = config.effects.effectOpacity;
+      }
+      if (config.effects.motionIntensity !== undefined) {
+        this.motionIntensity = config.effects.motionIntensity;
+      }
+    }
+
+    // 应用后期特效
+    if (config.postfx) {
+      if (config.postfx.shake !== undefined) this.shake = config.postfx.shake;
+      if (config.postfx.zoom !== undefined) this.zoom = config.postfx.zoom;
+      if (config.postfx.tilt !== undefined) this.tilt = config.postfx.tilt;
+      if (config.postfx.glitch !== undefined) this.glitch = config.postfx.glitch;
+      if (config.postfx.hueShift !== undefined) this.hueShift = config.postfx.hueShift;
+    }
+
+    // 应用媒体
+    if (config.media && config.media.hasMedia && config.media.url) {
+      // 注意：媒体文件需要重新加载，这里只更新变换参数
+      if (config.media.offsetX !== undefined || config.media.offsetY !== undefined) {
+        this.setMediaOffset(config.media.offsetX || 0, config.media.offsetY || 0);
+      }
+      if (config.media.scale !== undefined) {
+        this.setMediaScale(config.media.scale);
+      }
+    }
+
+    // 应用画布颜色
+    if (config.render?.canvasColor !== undefined) {
+      this.canvasColor = config.render.canvasColor;
+    }
+  }
+
+  private getMediaConfig(): UnifiedConfig['media'] {
+    const state = this.getMediaState();
+    const mediaLayer = this.layers.get('media');
+    const hasMedia = !!(mediaLayer && mediaLayer.children.length > 0);
+    
+    return {
+      hasMedia,
+      type: this.mediaElement instanceof HTMLVideoElement ? 'video' 
+            : this.mediaElement instanceof HTMLImageElement ? 'image' : null,
+      url: null, // URL 无法序列化，可考虑存储文件名
+      offsetX: state?.offsetX ?? 0,
+      offsetY: state?.offsetY ?? 0,
+      scale: state?.scale ?? 1,
+      mode: 'fit', // 需要存储模式
+    };
   }
 
   set animationSpeed(val: number) { this._animationSpeed = val; }
