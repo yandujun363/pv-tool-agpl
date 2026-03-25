@@ -100,6 +100,22 @@ export const zh = {
   'choose_file': '选择文件',
   'no_file': '未选择文件',
 
+  //Export and import project
+  'project_file': '工程文件',
+  'export_project': '导出工程',
+  'import_project': '导入工程',
+  'export_success': '导出成功',
+  'import_success': '导入成功',
+  'import_failed': '导入失败',
+  'project_file_desc': 'PV Tool CE 工程文件 (.pvtoolce)',
+  'confirm_import': '导入将替换当前配置，是否继续？',
+  'export_with_resources': '包含资源文件',
+  'export_with_media': '包含背景媒体',
+  'export_with_audio': '包含音频',
+  'export_with_lyrics': '包含歌词',
+  'lrc_imported': '歌词已导入',
+
+
   // Sharecode & template management
   'export_code': '导出分享码',
   'export_json_confirm': '导出为 JSON 格式（可读）？\n确定=JSON，取消=原版二进制',

@@ -837,3 +837,15 @@ body.pv-panels-hidden .mobile-toggle {
     display: block;
     margin-top: 2px;
 }
+
+.pv-project-export-dialog {
+    max-width: 300px;
+}
+
+.pv-project-export-dialog .effect-toggle {
+    margin: 8px 0;
+}
+
+.pv-project-export-dialog .effect-toggle input {
+    margin-right: 8px;
+}

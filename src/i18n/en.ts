@@ -102,6 +102,21 @@ export const en: Record<LocaleKey, string> = {
   'choose_file': 'Choose File',
   'no_file': 'No file chosen',
 
+  //Export and import project
+  'project_file': 'Project File',
+  'export_project': 'Export Project',
+  'import_project': 'Import Project',
+  'export_success': 'Export Successful',
+  'import_success': 'Import Successful',
+  'import_failed': 'Import Failed',
+  'project_file_desc': 'PV Tool CE Project File (.pvtoolce)',
+  'confirm_import': 'Importing will replace the current configuration. Continue?',
+  'export_with_resources': 'Include Resource Files',
+  'export_with_media': 'Include Background Media',
+  'export_with_audio': 'Include Audio',
+  'export_with_lyrics': 'Include Lyrics',
+  'lrc_imported': 'Lyrics imported',
+
   // Sharecode
   'export_code': 'Export Code',
   'export_json_confirm': 'Export as JSON format (readable)?\nOK=JSON, Cancel=legacy binary',

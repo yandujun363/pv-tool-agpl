@@ -102,6 +102,21 @@ export const ja: Record<LocaleKey, string> = {
   'choose_file': 'ファイル選択',
   'no_file': '未選択',
 
+  //Export and import project
+  'project_file': 'プロジェクトファイル',
+  'export_project': 'プロジェクトをエクスポート',
+  'import_project': 'プロジェクトをインポート',
+  'export_success': 'エクスポート成功',
+  'import_success': 'インポート成功',
+  'import_failed': 'インポート失敗',
+  'project_file_desc': 'PV Tool CE プロジェクトファイル (.pvtoolce)',
+  'confirm_import': 'インポートすると現在の設定が置き換えられます。続行しますか？',
+  'export_with_resources': 'リソースファイルを含める',
+  'export_with_media': '背景メディアを含める',
+  'export_with_audio': 'オーディオを含める',
+  'export_with_lyrics': '歌詞を含める',
+  'lrc_imported': '歌詞をインポートしました',
+
   // Sharecode & template management
   'export_code': 'シェアコード出力',
   'export_json_confirm': 'JSON形式でエクスポート（可読）？\nOK=JSON、キャンセル=従来のバイナリ',

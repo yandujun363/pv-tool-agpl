@@ -21,6 +21,7 @@ import { testNowPlayingConnection } from './core/nowPlayingProvider';
 import { testWesingCapConnection } from './core/wesingCapProvider';
 import { initCopyUrlButton } from './core/copyUrl';
 import { showToast, attachModalDismiss } from './core/uiHelpers';
+import { exportProject, importProject, resourceDB } from './core/projectFile';
 
 console.log('%cPV Tool%c solaris:0914', 'color:#6688cc;font-weight:bold', 'color:#888');
 
@@ -241,6 +242,13 @@ app.innerHTML = `
             <span id="rec-label">${t('rec')}</span>
           </button>
           <span id="rec-timer" class="rec-timer" style="display:none"></span>
+        </div>
+
+        <div class="control-group">
+          <div class="template-actions" style="gap: 8px; margin-top: 8px;">
+            <button class="btn btn-sm" id="export-project-btn">${t('export_project')}</button>
+            <button class="btn btn-sm" id="import-project-btn">${t('import_project')}</button>
+          </div>
         </div>
       </details>
 
@@ -1324,3 +1332,278 @@ recBtn.addEventListener('click', () => {
     if (el) hide();
   }, true);
 }
+
+
+
+const exportProjectBtn = document.getElementById('export-project-btn') as HTMLButtonElement;
+const importProjectBtn = document.getElementById('import-project-btn') as HTMLButtonElement;
+const importProjectInput = document.createElement('input');
+importProjectInput.type = 'file';
+importProjectInput.accept = '.pvtoolce';
+importProjectInput.style.display = 'none';
+document.body.appendChild(importProjectInput);
+
+// 获取当前选中的 effects
+function getEnabledEffects(): string[] {
+  const checks = effectGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+  const enabled: string[] = [];
+  checks.forEach((cb) => {
+    if (cb.checked) {
+      enabled.push(cb.dataset.effectIdx!);
+    }
+  });
+  return enabled;
+}
+
+// 获取当前选中的模板配置
+function getCurrentTemplateConfig(): TemplateConfig | undefined {
+  const val = templateSelect.value;
+  if (val === 'custom') {
+    return buildCustomTemplate();
+  }
+  if (val.startsWith('user-')) {
+    const idx = parseInt(val.split('-')[1]);
+    return customTemplates[idx];
+  }
+  return undefined;
+}
+
+async function doExportProject() {
+  const mediaFile = mediaInput.files?.[0] || null;
+  const audioFile = audioInput.files?.[0] || null;
+  const lrcContent = lrcPickName.textContent !== t('no_file') 
+    ? textInput.value 
+    : null;
+  
+  const mediaOffset = engine.getMediaState();
+  
+  const blob = await exportProject({
+    template: templateSelect.value,
+    templateConfig: getCurrentTemplateConfig(),
+    canvasColor: engine.canvasColor,
+    text: textInput.value,
+    segmentDuration: engine.segmentDuration,
+    animationSpeed: engine.animationSpeed,
+    motionIntensity: engine.motionIntensity,
+    effectOpacity: engine.effectOpacity,
+    postfx: {
+      shake: engine.shake,
+      zoom: engine.zoom,
+      tilt: engine.tilt,
+      glitch: engine.glitch,
+      hueShift: engine.hueShift,
+    },
+    beatReactivity: engine.beatReactivity,
+    bpm: engine.beat.bpm,
+    alphaMode: engine.alphaMode,
+    mediaMode: (document.getElementById('media-mode') as HTMLSelectElement)?.value as 'fit' | 'free' || 'fit',
+    mediaOffset: (() => {
+        if (!mediaOffset) return { x: 0, y: 0, scale: 1 };
+        if ('offsetX' in mediaOffset && 'offsetY' in mediaOffset) {
+            return {
+                x: mediaOffset.offsetX,
+                y: mediaOffset.offsetY,
+                scale: mediaOffset.scale
+            };
+        }
+        return mediaOffset;
+    })(),
+    effects: getEnabledEffects(),
+    mediaFile: mediaFile || undefined,
+    audioFile: audioFile || undefined,
+    lrcContent: lrcContent || undefined,
+    lrcFileName: lrcPickName.textContent !== t('no_file') ? lrcPickName.textContent : undefined,
+  });
+  
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+  a.download = `pv-project-${timestamp}.pvtoolce`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  showToast(t('export_success'));
+}
+
+async function doImportProject(file: File) {
+  // 确认对话框
+  if (!confirm(t('confirm_import'))) return;
+  
+  recLabel.textContent = t('packing');
+  
+  try {
+    const { project, mediaFile, audioFile, lrcContent } = await importProject(file);
+    
+    // 恢复模板选择
+    const templateVal = project.config.template;
+    if (templateVal === 'custom' && project.config.templateConfig) {
+      // 导入自定义模板
+      customTemplates.push(project.config.templateConfig);
+      saveCustomTemplates(customTemplates);
+      rebuildTemplateSelect();
+      templateSelect.value = `user-${customTemplates.length - 1}`;
+    } else if (typeof templateVal === 'string' && templateVal.startsWith('user-')) {
+      // 已存在的用户模板
+      const idx = parseInt(templateVal.split('-')[1]);
+      if (idx >= 0 && idx < customTemplates.length) {
+        templateSelect.value = templateVal;
+      } else {
+        templateSelect.value = '0';
+      }
+    } else {
+      templateSelect.value = String(templateVal);
+    }
+    templateSelect.dispatchEvent(new Event('change'));
+    
+    // 恢复画布颜色
+    if (project.config.canvasColor) {
+      engine.canvasColor = project.config.canvasColor;
+      // 更新 swatch 高亮
+      const swatch = document.querySelector(`.swatch[data-color="${project.config.canvasColor}"]`);
+      if (swatch) {
+        document.querySelectorAll('.swatch').forEach(s => s.classList.remove('swatch-active'));
+        swatch.classList.add('swatch-active');
+      } else {
+        document.querySelector('.swatch[data-color=""]')?.classList.add('swatch-active');
+      }
+    }
+    
+    // 恢复文本
+    textInput.value = project.config.text;
+    engine.setText(project.config.text);
+    
+    // 恢复滑块值
+    segSlider.value = String(project.config.segmentDuration);
+    segVal.textContent = `${project.config.segmentDuration.toFixed(1)}s`;
+    engine.segmentDuration = project.config.segmentDuration;
+    
+    speedSlider.value = String(project.config.animationSpeed);
+    speedVal.textContent = `${project.config.animationSpeed.toFixed(1)}x`;
+    engine.animationSpeed = project.config.animationSpeed;
+    
+    motionSlider.value = String(project.config.motionIntensity);
+    motionVal.textContent = `${project.config.motionIntensity.toFixed(1)}x`;
+    engine.motionIntensity = project.config.motionIntensity;
+    
+    opacitySlider.value = String(project.config.effectOpacity);
+    opacityVal.textContent = `${Math.round(project.config.effectOpacity * 100)}%`;
+    engine.effectOpacity = project.config.effectOpacity;
+    
+    // 恢复 PostFX
+    engine.shake = project.config.postfx.shake;
+    shakeSlider.value = String(project.config.postfx.shake);
+    shakeVal.textContent = project.config.postfx.shake.toFixed(2);
+    
+    engine.zoom = project.config.postfx.zoom;
+    zoomSlider.value = String(project.config.postfx.zoom);
+    zoomVal.textContent = project.config.postfx.zoom.toFixed(2);
+    
+    engine.tilt = project.config.postfx.tilt;
+    tiltSlider.value = String(project.config.postfx.tilt);
+    tiltVal.textContent = `${(project.config.postfx.tilt * 17.2).toFixed(0)}°`;
+    
+    engine.glitch = project.config.postfx.glitch;
+    glitchSlider.value = String(project.config.postfx.glitch);
+    glitchVal.textContent = project.config.postfx.glitch.toFixed(2);
+    
+    engine.hueShift = project.config.postfx.hueShift;
+    hueSlider.value = String(project.config.postfx.hueShift);
+    hueVal.textContent = `${project.config.postfx.hueShift}°`;
+    
+    // 恢复 BPM
+    engine.beat.bpm = project.config.bpm;
+    bpmSlider.value = String(project.config.bpm);
+    bpmVal.textContent = String(project.config.bpm);
+    
+    // 恢复 Beat Reactivity
+    engine.beatReactivity = project.config.beatReactivity;
+    beatSlider.value = String(project.config.beatReactivity);
+    beatVal.textContent = project.config.beatReactivity.toFixed(2);
+    
+    // 恢复 Alpha Mode
+    alphaToggle.checked = project.config.alphaMode;
+    engine.alphaMode = project.config.alphaMode;
+    
+    // 恢复 Effects 勾选状态
+    const effectsSet = new Set(project.config.effects);
+    const checks = effectGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+    checks.forEach((cb) => {
+      cb.checked = effectsSet.has(cb.dataset.effectIdx!);
+    });
+    
+    // 恢复媒体资源
+    if (mediaFile) {
+      mediaInput.files = null;
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(mediaFile);
+      mediaInput.files = dataTransfer.files;
+      pendingFile = mediaFile;
+      document.getElementById('media-pick-name')!.textContent = mediaFile.name;
+      mediaModeGroup.style.display = 'flex';
+      
+      // 应用媒体并恢复位置
+      const mode = project.config.mediaMode;
+      await engine.addMedia(mediaFile, mode);
+      engine.setMediaOffset(project.config.mediaOffset.x, project.config.mediaOffset.y);
+      engine.setMediaScale(project.config.mediaOffset.scale);
+      
+      // 恢复滑块
+      mediaXSlider.value = String(project.config.mediaOffset.x);
+      mediaYSlider.value = String(project.config.mediaOffset.y);
+      mediaScaleSlider.value = String(project.config.mediaOffset.scale);
+      mediaXVal.textContent = String(project.config.mediaOffset.x);
+      mediaYVal.textContent = String(project.config.mediaOffset.y);
+      mediaScaleVal.textContent = `${project.config.mediaOffset.scale.toFixed(1)}x`;
+      mediaPosGroup.style.display = 'flex';
+      pendingFile = null;
+    }
+    
+    // 恢复音频
+    if (audioFile) {
+      const audioPickName = document.getElementById('audio-pick-name')!;
+      audioPickName.textContent = audioFile.name;
+      await engine.beat.loadAudio(audioFile);
+      audioControls.style.display = 'flex';
+      audioStatus.textContent = t('playing');
+      audioToggle.textContent = t('pause');
+    }
+    
+    // 恢复 LRC
+    if (lrcContent) {
+      lrcPickName.textContent = project.resources.lrc?.name || t('lrc_imported');
+      textInput.value = lrcContent;
+      applyTextInput(lrcContent);
+    }
+    
+    // 触发生成 custom template 重建
+    if (templateSelect.value === 'custom') {
+      // 手动触发 effects 变化事件来重建 custom template
+      const changeEvent = new Event('change');
+      effectGrid.dispatchEvent(changeEvent);
+    }
+    
+    showToast(t('import_success'));
+  } catch (err) {
+    console.error('Import failed:', err);
+    showToast(t('import_failed'));
+  } finally {
+    recLabel.textContent = t('rec');
+  }
+}
+
+exportProjectBtn.addEventListener('click', () => {
+  doExportProject();
+});
+
+importProjectBtn.addEventListener('click', () => {
+  importProjectInput.click();
+});
+
+importProjectInput.addEventListener('change', (e) => {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (file) {
+    doImportProject(file);
+  }
+  importProjectInput.value = '';
+});
