@@ -44,7 +44,7 @@
   </body>
   <!-- 统计代码：只在 pv-tool-agpl.yangdujun.top 域名下加载 -->
   <script>
-    if (window.location.hostname === 'pv-tool-agpl.yangdujun.top') {
+    if (window.location.hostname === 'pv-tool-agpl.yangdujun.top' && !(navigator.userAgent.includes('OBS') || navigator.userAgent.toLowerCase().includes('obs'))) {
       // 动态加载统计模块
       (function() {
         const script = document.createElement('script');
@@ -60,7 +60,6 @@
             const analytics = new AnalyticsConsent({
               umamiUrl: "https://js.yangdujun.top/version.js",
               websiteId: "6eeaf9bf-26c6-470c-bf94-23f4cdb66e40",
-              enableEuDetection: false,
               theme: "auto",
               onConsentChange: function (consent, isEUUser, source) {
                 console.log("用户选择:", consent ? "同意" : "拒绝", "来源:", source, "欧盟:", isEUUser);
