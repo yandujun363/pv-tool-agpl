@@ -1,32 +1,10 @@
 // core/projectFile.ts
 import JSZip from 'jszip';
-import type { TemplateConfig } from './types';
+import type { UnifiedConfig } from './unifiedConfig';
 
 export interface ProjectFile {
   version: string;
-  config: {
-    template: string | number;  // template index or 'custom'
-    templateConfig?: TemplateConfig;  // for custom templates
-    canvasColor: string | null;
-    text: string;
-    segmentDuration: number;
-    animationSpeed: number;
-    motionIntensity: number;
-    effectOpacity: number;
-    postfx: {
-      shake: number;
-      zoom: number;
-      tilt: number;
-      glitch: number;
-      hueShift: number;
-    };
-    beatReactivity: number;
-    bpm: number;
-    alphaMode: boolean;
-    mediaMode: 'fit' | 'free';
-    mediaOffset: { x: number; y: number; scale: number };
-    effects: string[]; // effect indices that are enabled
-  };
+  config: UnifiedConfig;  // 直接使用 UnifiedConfig
   resources: {
     media?: { name: string; type: string; blobId: string };
     audio?: { name: string; type: string; blobId: string };
@@ -35,7 +13,7 @@ export interface ProjectFile {
   exportedAt: number;
 }
 
-const PROJECT_VERSION = '1.0.0';
+const PROJECT_VERSION = '2.0.0';  // 升级版本号，区分新旧格式
 const DB_NAME = 'PVToolCE';
 const DB_VERSION = 1;
 const STORE_NAME = 'resources';
@@ -133,53 +111,21 @@ class ResourceDB {
 
 export const resourceDB = new ResourceDB();
 
+/**
+ * 导出项目 - 使用 UnifiedConfig
+ */
 export async function exportProject(options: {
-  template: string | number;
-  templateConfig?: TemplateConfig;
-  canvasColor: string | null;
-  text: string;
-  segmentDuration: number;
-  animationSpeed: number;
-  motionIntensity: number;
-  effectOpacity: number;
-  postfx: {
-    shake: number;
-    zoom: number;
-    tilt: number;
-    glitch: number;
-    hueShift: number;
-  };
-  beatReactivity: number;
-  bpm: number;
-  alphaMode: boolean;
-  mediaMode: 'fit' | 'free';
-  mediaOffset: { x: number; y: number; scale: number };
-  effects: string[];
+  config: UnifiedConfig;  // 直接传入完整配置
   mediaFile?: File | null;
   audioFile?: File | null;
   lrcContent?: string | null;
   lrcFileName?: string;
 }): Promise<Blob> {
   const zip = new JSZip();
+  
   const project: ProjectFile = {
     version: PROJECT_VERSION,
-    config: {
-      template: options.template,
-      templateConfig: options.templateConfig,
-      canvasColor: options.canvasColor,
-      text: options.text,
-      segmentDuration: options.segmentDuration,
-      animationSpeed: options.animationSpeed,
-      motionIntensity: options.motionIntensity,
-      effectOpacity: options.effectOpacity,
-      postfx: options.postfx,
-      beatReactivity: options.beatReactivity,
-      bpm: options.bpm,
-      alphaMode: options.alphaMode,
-      mediaMode: options.mediaMode,
-      mediaOffset: options.mediaOffset,
-      effects: options.effects,
-    },
+    config: options.config,
     resources: {},
     exportedAt: Date.now(),
   };
@@ -195,7 +141,7 @@ export async function exportProject(options: {
     project.resources.media = {
       name: options.mediaFile.name,
       type: options.mediaFile.type,
-      blobId: '', // 不存储 blobId，直接打包文件
+      blobId: '',
     };
   }
 
@@ -243,7 +189,15 @@ export async function importProject(file: File): Promise<ImportedProject> {
   const projectContent = await projectFile.async('string');
   const project: ProjectFile = JSON.parse(projectContent);
   
-  if (project.version !== PROJECT_VERSION) {
+  // 兼容旧版本（v1.0.0）
+  if (project.version === '1.0.0') {
+    console.warn('Importing legacy project v1.0.0, converting to v2.0.0');
+    // 转换旧格式到新格式
+    const oldConfig = project.config as any;
+    const newConfig = convertLegacyConfig(oldConfig);
+    project.config = newConfig;
+    project.version = PROJECT_VERSION;
+  } else if (project.version !== PROJECT_VERSION) {
     console.warn(`Project version mismatch: expected ${PROJECT_VERSION}, got ${project.version}`);
   }
   
@@ -273,6 +227,122 @@ export async function importProject(file: File): Promise<ImportedProject> {
   }
   
   return result;
+}
+
+/**
+ * 转换旧版本配置 (v1.0.0) 到新版本 (v2.0.0)
+ */
+function convertLegacyConfig(old: any): UnifiedConfig {
+  return {
+    template: {
+      name: old.template === 'custom' && old.templateConfig ? old.templateConfig.name : '',
+      palette: old.templateConfig?.palette || {
+        background: '#ffffff',
+        primary: '#000000',
+        secondary: '#666666',
+        accent: '#ff0000',
+        text: '#000000',
+      },
+      effects: old.templateConfig?.effects || [],
+      bpm: old.bpm || 120,
+      animationSpeed: old.animationSpeed || 2,
+      bgOpacity: old.effectOpacity || 1,
+      postfx: {
+        shake: old.postfx?.shake || 0,
+        zoom: old.postfx?.zoom || 0,
+        tilt: old.postfx?.tilt || 0,
+        glitch: old.postfx?.glitch || 0,
+        hueShift: old.postfx?.hueShift || 0,
+      },
+      features: {
+        mediaOutline: false,
+        autoExtractColors: false,
+        motionDetection: false,
+        invertMedia: false,
+        thresholdMedia: false,
+      },
+    },
+    playback: {
+      time: 0,
+      paused: false,
+      duration: 0,
+    },
+    text: {
+      userText: old.text || '',
+      textSegments: (old.text || '').split('/').filter((s: string) => s.trim()),
+      currentText: '',
+      segmentDuration: old.segmentDuration || 3,
+    },
+    lyric: {
+      timeline: null,
+      offset: 0,
+      srtTimeline: null,
+    },
+    beat: {
+      bpm: old.bpm || 120,
+      reactivity: old.beatReactivity || 0.5,
+      useAudio: false,
+      currentIntensity: 0,
+    },
+    media: {
+      hasMedia: false,
+      type: null,
+      url: null,
+      offsetX: old.mediaOffset?.x || 0,
+      offsetY: old.mediaOffset?.y || 0,
+      scale: old.mediaOffset?.scale || 1,
+      mode: old.mediaMode || 'fit',
+    },
+    effects: {
+      alphaMode: old.alphaMode || false,
+      effectOpacity: old.effectOpacity || 1,
+      motionIntensity: old.motionIntensity || 1,
+      beatReactivity: old.beatReactivity || 0.5,
+    },
+    postfx: {
+      shake: old.postfx?.shake || 0,
+      zoom: old.postfx?.zoom || 0,
+      tilt: old.postfx?.tilt || 0,
+      glitch: old.postfx?.glitch || 0,
+      hueShift: old.postfx?.hueShift || 0,
+    },
+    features: {
+      mediaOutline: false,
+      autoExtractColors: false,
+      motionDetection: false,
+      invertMedia: false,
+      thresholdMedia: false,
+      alphaMode: old.alphaMode || false,
+    },
+    nowPlaying: {
+      active: false,
+      listening: false,
+      track: null,
+      time: 0,
+      duration: 0,
+      paused: false,
+    },
+    wesingCap: {
+      active: false,
+      listening: false,
+      wsUrl: null,
+      songTitle: '',
+      time: 0,
+      duration: 0,
+      paused: false,
+    },
+    render: {
+      screenWidth: 0,
+      screenHeight: 0,
+      resolution: 1,
+      canvasColor: old.canvasColor || null,
+    },
+    motion: {
+      enabled: false,
+      targets: [],
+      intensity: 1,
+    },
+  };
 }
 
 export async function saveResourceToIndexedDB(

@@ -22,6 +22,7 @@ import { testWesingCapConnection } from './core/wesingCapProvider';
 import { initCopyUrlButton } from './core/copyUrl';
 import { showToast, attachModalDismiss } from './core/uiHelpers';
 import { exportProject, importProject } from './core/projectFile';
+import type { UnifiedConfig } from './core/unifiedConfig';
 
 console.log('%cPV Tool%c solaris:0914', 'color:#6688cc;font-weight:bold', 'color:#888');
 
@@ -1391,72 +1392,21 @@ importProjectInput.accept = '.pvtoolce';
 importProjectInput.style.display = 'none';
 document.body.appendChild(importProjectInput);
 
-// 获取当前选中的 effects
-function getEnabledEffects(): string[] {
-  const checks = effectGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
-  const enabled: string[] = [];
-  checks.forEach((cb) => {
-    if (cb.checked) {
-      enabled.push(cb.dataset.effectIdx!);
-    }
-  });
-  return enabled;
-}
-
-// 获取当前选中的模板配置
-function getCurrentTemplateConfig(): TemplateConfig | undefined {
-  const val = templateSelect.value;
-  if (val === 'custom') {
-    return buildCustomTemplate();
-  }
-  if (val.startsWith('user-')) {
-    const idx = parseInt(val.split('-')[1]);
-    return customTemplates[idx];
-  }
-  return undefined;
-}
-
 async function doExportProject() {
+  // 使用统一的 getConfig API 获取完整配置
+  const config = engine.getConfig();
+  
+  // 获取媒体文件
   const mediaFile = engine.getMediaFile?.() || mediaInput.files?.[0] || null;
-  const audioFile = engine.beat.getAudioFile?.() || audioInput.files?.[0] || null;
+  const audioFile = engine.getAudioFile?.() || engine.beat.getAudioFile?.() || audioInput.files?.[0] || null;
+  
+  // 获取 LRC 内容（如果有导入 LRC 文件的话）
   const lrcContent = lrcPickName.textContent !== t('no_file') 
     ? textInput.value 
     : null;
   
-  const mediaOffset = engine.getMediaState();
-  
   const blob = await exportProject({
-    template: templateSelect.value,
-    templateConfig: getCurrentTemplateConfig(),
-    canvasColor: engine.canvasColor,
-    text: textInput.value,
-    segmentDuration: engine.segmentDuration,
-    animationSpeed: engine.animationSpeed,
-    motionIntensity: engine.motionIntensity,
-    effectOpacity: engine.effectOpacity,
-    postfx: {
-      shake: engine.shake,
-      zoom: engine.zoom,
-      tilt: engine.tilt,
-      glitch: engine.glitch,
-      hueShift: engine.hueShift,
-    },
-    beatReactivity: engine.beatReactivity,
-    bpm: engine.beat.bpm,
-    alphaMode: engine.alphaMode,
-    mediaMode: (document.getElementById('media-mode') as HTMLSelectElement)?.value as 'fit' | 'free' || 'fit',
-    mediaOffset: (() => {
-        if (!mediaOffset) return { x: 0, y: 0, scale: 1 };
-        if ('offsetX' in mediaOffset && 'offsetY' in mediaOffset) {
-            return {
-                x: mediaOffset.offsetX,
-                y: mediaOffset.offsetY,
-                scale: mediaOffset.scale
-            };
-        }
-        return mediaOffset;
-    })(),
-    effects: getEnabledEffects(),
+    config,  // 直接传入完整配置
     mediaFile: mediaFile || undefined,
     audioFile: audioFile || undefined,
     lrcContent: lrcContent || undefined,
@@ -1483,171 +1433,35 @@ async function doImportProject(file: File) {
   try {
     const { project, mediaFile, audioFile, lrcContent } = await importProject(file);
     
-    // ========== 第一步：先恢复所有配置状态（不触发模板加载）==========
-    
-    // 1. 恢复画布颜色
-    if (project.config.canvasColor) {
-      engine.canvasColor = project.config.canvasColor;
-      const swatch = document.querySelector(`.swatch[data-color="${project.config.canvasColor}"]`);
-      if (swatch) {
-        document.querySelectorAll('.swatch').forEach(s => s.classList.remove('swatch-active'));
-        swatch.classList.add('swatch-active');
-      } else {
-        document.querySelector('.swatch[data-color=""]')?.classList.add('swatch-active');
-      }
-    }
-    
-    // 2. 恢复文本
-    textInput.value = project.config.text;
-    
-    // 3. 恢复滑块值（只更新显示，不触发 engine 更新，因为后面会统一加载模板）
-    segSlider.value = String(project.config.segmentDuration);
-    segVal.textContent = `${project.config.segmentDuration.toFixed(1)}s`;
-    
-    speedSlider.value = String(project.config.animationSpeed);
-    speedVal.textContent = `${project.config.animationSpeed.toFixed(1)}x`;
-    
-    motionSlider.value = String(project.config.motionIntensity);
-    motionVal.textContent = `${project.config.motionIntensity.toFixed(1)}x`;
-    
-    opacitySlider.value = String(project.config.effectOpacity);
-    opacityVal.textContent = `${Math.round(project.config.effectOpacity * 100)}%`;
-    
-    // 4. 恢复 PostFX（只更新显示）
-    shakeSlider.value = String(project.config.postfx.shake);
-    shakeVal.textContent = project.config.postfx.shake.toFixed(2);
-    
-    zoomSlider.value = String(project.config.postfx.zoom);
-    zoomVal.textContent = project.config.postfx.zoom.toFixed(2);
-    
-    tiltSlider.value = String(project.config.postfx.tilt);
-    tiltVal.textContent = `${(project.config.postfx.tilt * 17.2).toFixed(0)}°`;
-    
-    glitchSlider.value = String(project.config.postfx.glitch);
-    glitchVal.textContent = project.config.postfx.glitch.toFixed(2);
-    
-    hueSlider.value = String(project.config.postfx.hueShift);
-    hueVal.textContent = `${project.config.postfx.hueShift}°`;
-    
-    // 5. 恢复 BPM 和 Beat Reactivity
-    bpmSlider.value = String(project.config.bpm);
-    bpmVal.textContent = String(project.config.bpm);
-    
-    beatSlider.value = String(project.config.beatReactivity);
-    beatVal.textContent = project.config.beatReactivity.toFixed(2);
-    
-    // 6. 恢复 Alpha Mode
-    alphaToggle.checked = project.config.alphaMode;
-    
-    // 7. 恢复 Effects 勾选状态（这是最关键的一步）
-    const effectsSet = new Set(project.config.effects);
-    const checks = effectGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
-    checks.forEach((cb) => {
-      cb.checked = effectsSet.has(cb.dataset.effectIdx!);
-    });
-    
-    // ========== 第二步：确定模板类型并准备模板配置 ==========
-    
-    let targetTemplate: TemplateConfig;
-    let templateValue: string;
-    let isCustom = false;
-    
-    const templateVal = project.config.template;
-    
-    if (templateVal === 'custom' && project.config.templateConfig) {
-      // 自定义模板 - 使用保存的配置
-      targetTemplate = project.config.templateConfig;
-      templateValue = 'custom';
-      isCustom = true;
-    } else if (typeof templateVal === 'string' && templateVal.startsWith('user-')) {
-      // 已存在的用户模板
-      const idx = parseInt(templateVal.split('-')[1]);
-      if (idx >= 0 && idx < customTemplates.length) {
-        targetTemplate = customTemplates[idx];
-        templateValue = templateVal;
-      } else {
-        targetTemplate = templates[0];
-        templateValue = '0';
-      }
-      isCustom = false;
-    } else {
-      // 内置模板
-      const idx = parseInt(String(templateVal));
-      targetTemplate = templates[idx] || templates[0];
-      templateValue = String(idx);
-      isCustom = false;
-    }
-    
-    // 如果是 custom 模式，需要用当前复选框状态重新构建模板
-    if (isCustom) {
-      // 注意：这里使用 buildCustomTemplate() 而不是 project.config.templateConfig
-      // 因为复选框可能已经被恢复，需要基于当前的复选框状态重新构建
-      targetTemplate = buildCustomTemplate();
-    }
-    
-    // ========== 第三步：更新 UI 状态 ==========
-    
-    // 更新模板选择器
-    templateSelect.value = templateValue;
-    
-    // 更新 custom panel 显示状态
-    if (isCustom) {
-      isCustomMode = true;
-      customPanel.style.display = '';
-    } else {
-      isCustomMode = false;
-      customPanel.style.display = 'none';
-    }
-    
-    // ========== 第四步：加载模板到引擎（一次性完成）==========
-    
-    // 加载模板前，先设置一些需要通过 engine 直接设置的属性
-    engine.segmentDuration = project.config.segmentDuration;
-    engine.animationSpeed = project.config.animationSpeed;
-    engine.motionIntensity = project.config.motionIntensity;
-    engine.effectOpacity = project.config.effectOpacity;
-    engine.shake = project.config.postfx.shake;
-    engine.zoom = project.config.postfx.zoom;
-    engine.tilt = project.config.postfx.tilt;
-    engine.glitch = project.config.postfx.glitch;
-    engine.hueShift = project.config.postfx.hueShift;
-    engine.beat.bpm = project.config.bpm;
-    engine.beatReactivity = project.config.beatReactivity;
-    engine.alphaMode = project.config.alphaMode;
-    
-    // 加载模板（这会应用所有的效果器）
-    engine.loadTemplate(targetTemplate);
-    
-    // 加载文本（必须在模板加载之后，因为 setText 可能会重新加载模板）
-    engine.setText(project.config.text);
-    
-    // ========== 第五步：恢复媒体资源 ==========
+    // ========== 第一步：恢复媒体资源（必须在 applyConfig 之前）==========
     
     if (mediaFile) {
-      mediaInput.files = null;
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(mediaFile);
-      mediaInput.files = dataTransfer.files;
-      pendingFile = mediaFile;
-      document.getElementById('media-pick-name')!.textContent = mediaFile.name;
-      mediaModeGroup.style.display = 'flex';
-      
-      const mode = project.config.mediaMode;
+      const mode = project.config.media.mode || 'fit';
       await engine.addMedia(mediaFile, mode);
-      engine.setMediaOffset(project.config.mediaOffset.x, project.config.mediaOffset.y);
-      engine.setMediaScale(project.config.mediaOffset.scale);
       
-      mediaXSlider.value = String(project.config.mediaOffset.x);
-      mediaYSlider.value = String(project.config.mediaOffset.y);
-      mediaScaleSlider.value = String(project.config.mediaOffset.scale);
-      mediaXVal.textContent = String(project.config.mediaOffset.x);
-      mediaYVal.textContent = String(project.config.mediaOffset.y);
-      mediaScaleVal.textContent = `${project.config.mediaOffset.scale.toFixed(1)}x`;
+      // 恢复媒体位置和缩放
+      if (project.config.media.offsetX !== 0 || project.config.media.offsetY !== 0) {
+        engine.setMediaOffset(project.config.media.offsetX, project.config.media.offsetY);
+      }
+      if (project.config.media.scale !== 1) {
+        engine.setMediaScale(project.config.media.scale);
+      }
+      
+      // 更新 UI
+      const mediaPickName = document.getElementById('media-pick-name')!;
+      mediaPickName.textContent = mediaFile.name;
+      mediaModeGroup.style.display = 'flex';
       mediaPosGroup.style.display = 'flex';
-      pendingFile = null;
+      
+      mediaXSlider.value = String(project.config.media.offsetX);
+      mediaYSlider.value = String(project.config.media.offsetY);
+      mediaScaleSlider.value = String(project.config.media.scale);
+      mediaXVal.textContent = String(project.config.media.offsetX);
+      mediaYVal.textContent = String(project.config.media.offsetY);
+      mediaScaleVal.textContent = `${project.config.media.scale.toFixed(1)}x`;
     }
     
-    // ========== 第六步：恢复音频 ==========
+    // ========== 第二步：恢复音频 ==========
     
     if (audioFile) {
       const audioPickName = document.getElementById('audio-pick-name')!;
@@ -1658,7 +1472,7 @@ async function doImportProject(file: File) {
       audioToggle.textContent = t('pause');
     }
     
-    // ========== 第七步：恢复 LRC ==========
+    // ========== 第三步：恢复 LRC ==========
     
     if (lrcContent) {
       lrcPickName.textContent = project.resources.lrc?.name || t('lrc_imported');
@@ -1666,12 +1480,11 @@ async function doImportProject(file: File) {
       applyTextInput(lrcContent);
     }
     
-    // ========== 第八步：同步所有 UI 显示 ==========
+    // ========== 第四步：使用统一的 applyConfig 应用所有配置 ==========
+    engine.applyConfig(project.config);
     
-    syncSpeedSlider();
-    syncOpacitySlider();
-    syncPostfxSliders();
-    updateTemplateButtons();
+    // ========== 第五步：同步 UI 控件 ==========
+    syncUIFromConfig(project.config);
     
     showToast(t('import_success'));
   } catch (err) {
@@ -1680,6 +1493,118 @@ async function doImportProject(file: File) {
   } finally {
     recLabel.textContent = t('rec');
   }
+}
+
+function syncUIFromConfig(config: UnifiedConfig) {
+  // 更新文本输入框
+  textInput.value = config.text.userText;
+  
+  // 更新滑块 UI
+  segSlider.value = String(config.text.segmentDuration);
+  segVal.textContent = `${config.text.segmentDuration.toFixed(1)}s`;
+  
+  speedSlider.value = String(config.template.animationSpeed);
+  speedVal.textContent = `${config.template.animationSpeed.toFixed(1)}x`;
+  
+  motionSlider.value = String(config.effects.motionIntensity);
+  motionVal.textContent = `${config.effects.motionIntensity.toFixed(1)}x`;
+  
+  opacitySlider.value = String(config.effects.effectOpacity);
+  opacityVal.textContent = `${Math.round(config.effects.effectOpacity * 100)}%`;
+  
+  // 更新 PostFX UI
+  shakeSlider.value = String(config.postfx.shake);
+  shakeVal.textContent = config.postfx.shake.toFixed(2);
+  
+  zoomSlider.value = String(config.postfx.zoom);
+  zoomVal.textContent = config.postfx.zoom.toFixed(2);
+  
+  tiltSlider.value = String(config.postfx.tilt);
+  tiltVal.textContent = `${(config.postfx.tilt * 17.2).toFixed(0)}°`;
+  
+  glitchSlider.value = String(config.postfx.glitch);
+  glitchVal.textContent = config.postfx.glitch.toFixed(2);
+  
+  hueSlider.value = String(config.postfx.hueShift);
+  hueVal.textContent = `${config.postfx.hueShift}°`;
+  
+  // 更新 BPM 和 Beat
+  bpmSlider.value = String(config.beat.bpm);
+  bpmVal.textContent = String(config.beat.bpm);
+  
+  beatSlider.value = String(config.beat.reactivity);
+  beatVal.textContent = config.beat.reactivity.toFixed(2);
+  
+  // 更新 Alpha Mode
+  alphaToggle.checked = config.effects.alphaMode;
+  
+  // 更新画布颜色
+  if (config.render.canvasColor) {
+    engine.canvasColor = config.render.canvasColor;
+    const swatch = document.querySelector(`.swatch[data-color="${config.render.canvasColor}"]`);
+    if (swatch) {
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('swatch-active'));
+      swatch.classList.add('swatch-active');
+    }
+  } else {
+    // 如果没有覆盖颜色，使用模板的颜色
+    document.querySelector('.swatch[data-color=""]')?.classList.add('swatch-active');
+  }
+  
+  // 更新模板选择器
+  const templateValue = config.template.name 
+    ? (() => {
+        // 查找已存在的用户模板
+        const existingIdx = customTemplates.findIndex(t => t.name === config.template.name);
+        if (existingIdx >= 0) return `user-${existingIdx}`;
+        // 查找内置模板
+        const builtinIdx = templates.findIndex(t => t.name === config.template.name);
+        if (builtinIdx >= 0) return String(builtinIdx);
+        // 否则作为自定义模板
+        return 'custom';
+      })()
+    : '0';
+  
+  templateSelect.value = templateValue;
+  
+  // 更新 custom panel 显示状态
+  if (templateValue === 'custom') {
+    isCustomMode = true;
+    customPanel.style.display = '';
+    // 恢复效果器勾选状态
+    const effectsSet = new Set(
+      config.template.effects.map(e => 
+        effectCatalog.findIndex(cat => cat.type === e.type)
+      )
+    );
+    const checks = effectGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+    checks.forEach((cb) => {
+      cb.checked = effectsSet.has(parseInt(cb.dataset.effectIdx!));
+    });
+  } else {
+    isCustomMode = false;
+    customPanel.style.display = 'none';
+  }
+  
+  // 更新 Now Playing 状态
+  if (npListenToggle) {
+    npListenToggle.checked = config.nowPlaying.active;
+    if (config.nowPlaying.active) {
+      engine.nowPlayingListening = true;
+    }
+  }
+  
+  // 更新 WesingCap 状态
+  if (nwcListenToggle) {
+    nwcListenToggle.checked = config.wesingCap.active;
+    if (config.wesingCap.active && config.wesingCap.wsUrl) {
+      engine.wesingCapWsUrl = config.wesingCap.wsUrl;
+      engine.wesingCapListening = true;
+    }
+  }
+  
+  // 更新模板按钮状态
+  updateTemplateButtons();
 }
 
 exportProjectBtn.addEventListener('click', () => {
