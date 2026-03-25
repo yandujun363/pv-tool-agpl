@@ -20,6 +20,8 @@ export class BeatProvider {
   private rawBeat = 0;
   private smoothBeat = 0;
 
+  private _audioFile: File | null = null;
+
   set bpm(val: number) { this._bpm = Math.max(30, Math.min(300, val)); }
   get bpm() { return this._bpm; }
 
@@ -27,6 +29,7 @@ export class BeatProvider {
 
   async loadAudio(file: File): Promise<HTMLAudioElement> {
     this.dispose();
+    this._audioFile = file;
 
     this.audioCtx = new AudioContext();
     this.analyser = this.audioCtx.createAnalyser();
@@ -48,6 +51,10 @@ export class BeatProvider {
 
     await this.audioEl.play();
     return this.audioEl;
+  }
+
+  getAudioFile(): File | null {
+    return this._audioFile;
   }
 
   /** Get current beat intensity (0 ~ 1) */

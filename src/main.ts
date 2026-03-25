@@ -21,6 +21,8 @@ import { testNowPlayingConnection } from './core/nowPlayingProvider';
 import { testWesingCapConnection } from './core/wesingCapProvider';
 import { initCopyUrlButton } from './core/copyUrl';
 import { showToast, attachModalDismiss } from './core/uiHelpers';
+import { exportProject, importProject } from './core/projectFile';
+import type { UnifiedConfig } from './core/unifiedConfig';
 
 console.log('%cPV Tool%c solaris:0914', 'color:#6688cc;font-weight:bold', 'color:#888');
 
@@ -241,6 +243,13 @@ app.innerHTML = `
             <span id="rec-label">${t('rec')}</span>
           </button>
           <span id="rec-timer" class="rec-timer" style="display:none"></span>
+        </div>
+
+        <div class="control-group">
+          <div class="template-actions" style="gap: 8px; margin-top: 8px;">
+            <button class="btn btn-sm" id="export-project-btn">${t('export_project')}</button>
+            <button class="btn btn-sm" id="import-project-btn">${t('import_project')}</button>
+          </div>
         </div>
       </details>
 
@@ -1372,3 +1381,244 @@ recBtn.addEventListener('click', () => {
     if (el) hide();
   }, true);
 }
+
+
+
+const exportProjectBtn = document.getElementById('export-project-btn') as HTMLButtonElement;
+const importProjectBtn = document.getElementById('import-project-btn') as HTMLButtonElement;
+const importProjectInput = document.createElement('input');
+importProjectInput.type = 'file';
+importProjectInput.accept = '.pvtoolce';
+importProjectInput.style.display = 'none';
+document.body.appendChild(importProjectInput);
+
+async function doExportProject() {
+  // 使用统一的 getConfig API 获取完整配置
+  const config = engine.getConfig();
+  
+  // 获取媒体文件
+  const mediaFile = engine.getMediaFile?.() || mediaInput.files?.[0] || null;
+  const audioFile = engine.getAudioFile?.() || engine.beat.getAudioFile?.() || audioInput.files?.[0] || null;
+  
+  // 获取 LRC 内容（如果有导入 LRC 文件的话）
+  const lrcContent = lrcPickName.textContent !== t('no_file') 
+    ? textInput.value 
+    : null;
+  
+  const blob = await exportProject({
+    config,  // 直接传入完整配置
+    mediaFile: mediaFile || undefined,
+    audioFile: audioFile || undefined,
+    lrcContent: lrcContent || undefined,
+    lrcFileName: lrcPickName.textContent !== t('no_file') ? lrcPickName.textContent : undefined,
+  });
+  
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+  a.download = `pv-project-${timestamp}.pvtoolce`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  showToast(t('export_success'));
+}
+
+async function doImportProject(file: File) {
+  // 确认对话框
+  if (!confirm(t('confirm_import'))) return;
+  
+  recLabel.textContent = t('packing');
+  
+  try {
+    const { project, mediaFile, audioFile, lrcContent } = await importProject(file);
+    
+    // ========== 第一步：恢复媒体资源（必须在 applyConfig 之前）==========
+    
+    if (mediaFile) {
+      const mode = project.config.media.mode || 'fit';
+      await engine.addMedia(mediaFile, mode);
+      
+      // 恢复媒体位置和缩放
+      if (project.config.media.offsetX !== 0 || project.config.media.offsetY !== 0) {
+        engine.setMediaOffset(project.config.media.offsetX, project.config.media.offsetY);
+      }
+      if (project.config.media.scale !== 1) {
+        engine.setMediaScale(project.config.media.scale);
+      }
+      
+      // 更新 UI
+      const mediaPickName = document.getElementById('media-pick-name')!;
+      mediaPickName.textContent = mediaFile.name;
+      mediaModeGroup.style.display = 'flex';
+      mediaPosGroup.style.display = 'flex';
+      
+      mediaXSlider.value = String(project.config.media.offsetX);
+      mediaYSlider.value = String(project.config.media.offsetY);
+      mediaScaleSlider.value = String(project.config.media.scale);
+      mediaXVal.textContent = String(project.config.media.offsetX);
+      mediaYVal.textContent = String(project.config.media.offsetY);
+      mediaScaleVal.textContent = `${project.config.media.scale.toFixed(1)}x`;
+    }
+    
+    // ========== 第二步：恢复音频 ==========
+    
+    if (audioFile) {
+      const audioPickName = document.getElementById('audio-pick-name')!;
+      audioPickName.textContent = audioFile.name;
+      await engine.beat.loadAudio(audioFile);
+      audioControls.style.display = 'flex';
+      audioStatus.textContent = t('playing');
+      audioToggle.textContent = t('pause');
+    }
+    
+    // ========== 第三步：恢复 LRC ==========
+    
+    if (lrcContent) {
+      lrcPickName.textContent = project.resources.lrc?.name || t('lrc_imported');
+      textInput.value = lrcContent;
+      applyTextInput(lrcContent);
+    }
+    
+    // ========== 第四步：使用统一的 applyConfig 应用所有配置 ==========
+    engine.applyConfig(project.config);
+    
+    // ========== 第五步：同步 UI 控件 ==========
+    syncUIFromConfig(project.config);
+    
+    showToast(t('import_success'));
+  } catch (err) {
+    console.error('Import failed:', err);
+    showToast(t('import_failed'));
+  } finally {
+    recLabel.textContent = t('rec');
+  }
+}
+
+function syncUIFromConfig(config: UnifiedConfig) {
+  // 更新文本输入框
+  textInput.value = config.text.userText;
+  
+  // 更新滑块 UI
+  segSlider.value = String(config.text.segmentDuration);
+  segVal.textContent = `${config.text.segmentDuration.toFixed(1)}s`;
+  
+  speedSlider.value = String(config.template.animationSpeed);
+  speedVal.textContent = `${config.template.animationSpeed.toFixed(1)}x`;
+  
+  motionSlider.value = String(config.effects.motionIntensity);
+  motionVal.textContent = `${config.effects.motionIntensity.toFixed(1)}x`;
+  
+  opacitySlider.value = String(config.effects.effectOpacity);
+  opacityVal.textContent = `${Math.round(config.effects.effectOpacity * 100)}%`;
+  
+  // 更新 PostFX UI
+  shakeSlider.value = String(config.postfx.shake);
+  shakeVal.textContent = config.postfx.shake.toFixed(2);
+  
+  zoomSlider.value = String(config.postfx.zoom);
+  zoomVal.textContent = config.postfx.zoom.toFixed(2);
+  
+  tiltSlider.value = String(config.postfx.tilt);
+  tiltVal.textContent = `${(config.postfx.tilt * 17.2).toFixed(0)}°`;
+  
+  glitchSlider.value = String(config.postfx.glitch);
+  glitchVal.textContent = config.postfx.glitch.toFixed(2);
+  
+  hueSlider.value = String(config.postfx.hueShift);
+  hueVal.textContent = `${config.postfx.hueShift}°`;
+  
+  // 更新 BPM 和 Beat
+  bpmSlider.value = String(config.beat.bpm);
+  bpmVal.textContent = String(config.beat.bpm);
+  
+  beatSlider.value = String(config.beat.reactivity);
+  beatVal.textContent = config.beat.reactivity.toFixed(2);
+  
+  // 更新 Alpha Mode
+  alphaToggle.checked = config.effects.alphaMode;
+  
+  // 更新画布颜色
+  if (config.render.canvasColor) {
+    engine.canvasColor = config.render.canvasColor;
+    const swatch = document.querySelector(`.swatch[data-color="${config.render.canvasColor}"]`);
+    if (swatch) {
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('swatch-active'));
+      swatch.classList.add('swatch-active');
+    }
+  } else {
+    // 如果没有覆盖颜色，使用模板的颜色
+    document.querySelector('.swatch[data-color=""]')?.classList.add('swatch-active');
+  }
+  
+  // 更新模板选择器
+  const templateValue = config.template.name 
+    ? (() => {
+        // 查找已存在的用户模板
+        const existingIdx = customTemplates.findIndex(t => t.name === config.template.name);
+        if (existingIdx >= 0) return `user-${existingIdx}`;
+        // 查找内置模板
+        const builtinIdx = templates.findIndex(t => t.name === config.template.name);
+        if (builtinIdx >= 0) return String(builtinIdx);
+        // 否则作为自定义模板
+        return 'custom';
+      })()
+    : '0';
+  
+  templateSelect.value = templateValue;
+  
+  // 更新 custom panel 显示状态
+  if (templateValue === 'custom') {
+    isCustomMode = true;
+    customPanel.style.display = '';
+    // 恢复效果器勾选状态
+    const effectsSet = new Set(
+      config.template.effects.map(e => 
+        effectCatalog.findIndex(cat => cat.type === e.type)
+      )
+    );
+    const checks = effectGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+    checks.forEach((cb) => {
+      cb.checked = effectsSet.has(parseInt(cb.dataset.effectIdx!));
+    });
+  } else {
+    isCustomMode = false;
+    customPanel.style.display = 'none';
+  }
+  
+  // 更新 Now Playing 状态
+  if (npListenToggle) {
+    npListenToggle.checked = config.nowPlaying.active;
+    if (config.nowPlaying.active) {
+      engine.nowPlayingListening = true;
+    }
+  }
+  
+  // 更新 WesingCap 状态
+  if (nwcListenToggle) {
+    nwcListenToggle.checked = config.wesingCap.active;
+    if (config.wesingCap.active && config.wesingCap.wsUrl) {
+      engine.wesingCapWsUrl = config.wesingCap.wsUrl;
+      engine.wesingCapListening = true;
+    }
+  }
+  
+  // 更新模板按钮状态
+  updateTemplateButtons();
+}
+
+exportProjectBtn.addEventListener('click', () => {
+  doExportProject();
+});
+
+importProjectBtn.addEventListener('click', () => {
+  importProjectInput.click();
+});
+
+importProjectInput.addEventListener('change', (e) => {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (file) {
+    doImportProject(file);
+  }
+  importProjectInput.value = '';
+});

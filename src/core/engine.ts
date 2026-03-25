@@ -99,6 +99,10 @@ export class PVEngine {
   private _nwcSavedUserText: string | null = null;
   private _nwcWsUrl: string | undefined = undefined;
 
+  //Flie
+  private _mediaFile: File | null = null;
+  private _audioFile: File | null = null;
+
   constructor() {
     this.app = new PIXI.Application();
     this.hueFilter = new PIXI.ColorMatrixFilter();
@@ -285,6 +289,15 @@ export class PVEngine {
     if (this.currentTemplate) {
       this.loadTemplate(this.currentTemplate);
     }
+  }
+
+
+  getMediaFile(): File | null {
+    return this._mediaFile || null;
+  }
+
+  getAudioFile(): File | null {
+    return this._audioFile || null;
   }
 
   /**
@@ -964,6 +977,7 @@ export class PVEngine {
     const url = URL.createObjectURL(file);
 
     try {
+      this._mediaFile = file;
       const mediaLayer = this.layers.get('media')!;
       this.destroyOutline();
       mediaLayer.removeChildren().forEach(c => c.destroy({ children: true }));
