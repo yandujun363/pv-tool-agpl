@@ -332,7 +332,7 @@ const container = document.getElementById('pv-container')!;
 
 declare global {
   interface Window {
-    __pv: {
+    PvToolCeConfig: {
       getConfig: () => any;
       applyConfig: (config: any) => void;
       saveConfig: () => void;
@@ -415,7 +415,7 @@ engine.init(container).then(() => {
   }
 
   // 暴露到全局
-  window.__pv = {
+  window.PvToolCeConfig = {
     getConfig: () => engine.getConfig(),
     applyConfig: (config) => engine.applyConfig(config),
     saveConfig: () => {
@@ -443,11 +443,11 @@ engine.init(container).then(() => {
   };
 
   console.log('PV Tool Community Edition 已启动，可用命令:');
-  console.log('  window.__pv.getConfig() - 获取配置');
-  console.log('  window.__pv.applyConfig() - 应用配置');
-  console.log('  window.__pv.saveConfig() - 保存配置');
-  console.log('  window.__pv.loadConfig() - 加载配置');
-  console.log('  window.__pv.exportConfig() - 导出配置');
+  console.log('  window.PvToolCeConfig.getConfig() - 获取配置');
+  console.log('  window.PvToolCeConfig.applyConfig() - 应用配置');
+  console.log('  window.PvToolCeConfig.saveConfig() - 保存配置');
+  console.log('  window.PvToolCeConfig.loadConfig() - 加载配置');
+  console.log('  window.PvToolCeConfig.exportConfig() - 导出配置');
 });
 
 // Mobile toggle
