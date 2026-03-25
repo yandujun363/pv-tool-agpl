@@ -35,12 +35,6 @@ This project incorporates the following third-party software:
 - Source: https://github.com/pixijs/pixijs
 - Description: WebGL/WebGPU 2D rendering engine
 
-**reflect-metadata** (version 0.2.2)
-- License: Apache-2.0
-- Copyright: Copyright (c) Microsoft Corporation
-- Source: https://github.com/rbuckton/reflect-metadata
-- Description: Metadata reflection API for decorators
-
 ### Development Dependencies
 
 **typescript** (version 5.9.3)

@@ -1,7 +1,7 @@
 {
   "name": "pv-tool-agpl",
   "private": true,
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "AGPL-3.0 community edition of PV Tool — browser-based visual effects engine",
   "type": "module",
   "scripts": {
