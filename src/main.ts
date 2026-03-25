@@ -21,7 +21,7 @@ import { testNowPlayingConnection } from './core/nowPlayingProvider';
 import { testWesingCapConnection } from './core/wesingCapProvider';
 import { initCopyUrlButton } from './core/copyUrl';
 import { showToast, attachModalDismiss } from './core/uiHelpers';
-import { exportProject, importProject, resourceDB } from './core/projectFile';
+import { exportProject, importProject } from './core/projectFile';
 
 console.log('%cPV Tool%c solaris:0914', 'color:#6688cc;font-weight:bold', 'color:#888');
 
@@ -1369,8 +1369,8 @@ function getCurrentTemplateConfig(): TemplateConfig | undefined {
 }
 
 async function doExportProject() {
-  const mediaFile = mediaInput.files?.[0] || null;
-  const audioFile = audioInput.files?.[0] || null;
+  const mediaFile = engine.getMediaFile?.() || mediaInput.files?.[0] || null;
+  const audioFile = engine.beat.getAudioFile?.() || audioInput.files?.[0] || null;
   const lrcContent = lrcPickName.textContent !== t('no_file') 
     ? textInput.value 
     : null;
@@ -1435,26 +1435,42 @@ async function doImportProject(file: File) {
   try {
     const { project, mediaFile, audioFile, lrcContent } = await importProject(file);
     
+    // 恢复 Effects 勾选状态（提前恢复，因为后面可能需要用到）
+    const effectsSet = new Set(project.config.effects);
+    const checks = effectGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+    checks.forEach((cb) => {
+      cb.checked = effectsSet.has(cb.dataset.effectIdx!);
+    });
+    
     // 恢复模板选择
     const templateVal = project.config.template;
     if (templateVal === 'custom' && project.config.templateConfig) {
-      // 导入自定义模板
-      customTemplates.push(project.config.templateConfig);
-      saveCustomTemplates(customTemplates);
-      rebuildTemplateSelect();
-      templateSelect.value = `user-${customTemplates.length - 1}`;
+      // 导入自定义模板 - 直接加载，不添加到列表
+      isCustomMode = true;
+      customPanel.style.display = '';
+      // 直接加载自定义模板配置
+      engine.loadTemplate(project.config.templateConfig);
+      templateSelect.value = 'custom';
     } else if (typeof templateVal === 'string' && templateVal.startsWith('user-')) {
       // 已存在的用户模板
+      isCustomMode = false;
+      customPanel.style.display = 'none';
       const idx = parseInt(templateVal.split('-')[1]);
       if (idx >= 0 && idx < customTemplates.length) {
         templateSelect.value = templateVal;
+        engine.loadTemplate(customTemplates[idx]);
       } else {
         templateSelect.value = '0';
+        engine.loadTemplate(templates[0]);
       }
     } else {
-      templateSelect.value = String(templateVal);
+      // 内置模板
+      isCustomMode = false;
+      customPanel.style.display = 'none';
+      const idx = parseInt(String(templateVal));
+      templateSelect.value = String(idx);
+      engine.loadTemplate(templates[idx] || templates[0]);
     }
-    templateSelect.dispatchEvent(new Event('change'));
     
     // 恢复画布颜色
     if (project.config.canvasColor) {
@@ -1525,13 +1541,6 @@ async function doImportProject(file: File) {
     alphaToggle.checked = project.config.alphaMode;
     engine.alphaMode = project.config.alphaMode;
     
-    // 恢复 Effects 勾选状态
-    const effectsSet = new Set(project.config.effects);
-    const checks = effectGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
-    checks.forEach((cb) => {
-      cb.checked = effectsSet.has(cb.dataset.effectIdx!);
-    });
-    
     // 恢复媒体资源
     if (mediaFile) {
       mediaInput.files = null;
@@ -1576,12 +1585,20 @@ async function doImportProject(file: File) {
       applyTextInput(lrcContent);
     }
     
-    // 触发生成 custom template 重建
+    // 【关键修复】如果是 custom 模式，强制重建并重新加载模板
     if (templateSelect.value === 'custom') {
-      // 手动触发 effects 变化事件来重建 custom template
-      const changeEvent = new Event('change');
-      effectGrid.dispatchEvent(changeEvent);
+      // 重新构建并加载自定义模板
+      const customTpl = buildCustomTemplate();
+      engine.loadTemplate(customTpl);
     }
+    
+    // 同步所有显示值（确保滑块显示与实际值一致）
+    syncSpeedSlider();
+    syncOpacitySlider();
+    syncPostfxSliders();
+    
+    // 更新模板按钮显示状态
+    updateTemplateButtons();
     
     showToast(t('import_success'));
   } catch (err) {

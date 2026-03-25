@@ -133,10 +133,6 @@ class ResourceDB {
 
 export const resourceDB = new ResourceDB();
 
-// function generateResourceId(): string {
-//   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-// }
-
 export async function exportProject(options: {
   template: string | number;
   templateConfig?: TemplateConfig;
