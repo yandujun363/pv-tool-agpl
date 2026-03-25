@@ -1,0 +1,107 @@
+PV Tool — AGPL Community Edition
+Copyright (C) 2026 DanteAlighieri13210914
+Copyright (C) 2026 The PV Tool AGPL Community Edition Contributors
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+---
+
+## Third-Party Components
+
+This project incorporates the following third-party software:
+
+### Runtime Dependencies
+
+**jszip** (version 3.10.1)
+- License: MIT OR GPL-3.0-or-later
+- Copyright: JSZip Contributors
+- Source: https://github.com/Stuk/jszip
+- Description: Library for creating, reading and editing .zip files
+
+**pixi.js** (version 8.16.0)
+- License: MIT
+- Copyright: Copyright (c) 2013-2025 Mathew Groves, Chad Engler
+- Source: https://github.com/pixijs/pixijs
+- Description: WebGL/WebGPU 2D rendering engine
+
+**reflect-metadata** (version 0.2.2)
+- License: Apache-2.0
+- Copyright: Copyright (c) Microsoft Corporation
+- Source: https://github.com/rbuckton/reflect-metadata
+- Description: Metadata reflection API for decorators
+
+### Development Dependencies
+
+**typescript** (version 5.9.3)
+- License: Apache-2.0
+- Copyright: Copyright (c) Microsoft Corporation
+- Source: https://github.com/Microsoft/TypeScript
+
+**vite** (version 7.3.1)
+- License: MIT
+- Copyright: Copyright (c) 2019-present, Yuxi (Evan) You and Vite contributors
+- Source: https://github.com/vitejs/vite
+
+**vite-plugin-full-reload** (version 1.2.0)
+- License: MIT
+- Copyright: Copyright (c) 2021 ElMassimo
+- Source: https://github.com/ElMassimo/vite-plugin-full-reload
+
+---
+
+## Additional Copyright Notices
+
+This project is based on the original **PV Tool** by DanteAlighieri13210914, preserved as the last AGPL-licensed version published on March 18, 2026.
+
+The original repository is archived at:
+https://github.com/yandujun363/pv-tool
+
+All original copyright notices and author attributions are preserved in the source code files.
+
+---
+
+## PixiJS Sub-dependencies
+
+PixiJS includes the following components with their own licenses:
+
+- **@pixi/colord** — MIT License
+- **earcut** — ISC License
+- **eventemitter3** — MIT License
+- **gifuct-js** — MIT License
+- **ismobilejs** — MIT License
+- **parse-svg-path** — MIT License
+- **tiny-lru** — BSD-3-Clause License
+- **@xmldom/xmldom** — MIT License
+- **@webgpu/types** — BSD-3-Clause License
+
+These components are used under the terms of their respective licenses, which are compatible with AGPL-3.0.
+
+---
+
+## License Compatibility Note
+
+This project is licensed under **AGPL-3.0 only**. All included third-party components have licenses that are compatible with AGPL-3.0:
+- MIT, Apache-2.0, ISC, and BSD-3-Clause licenses are permissive and allow redistribution under AGPL-3.0
+- JSZip's dual MIT/GPL-3.0-or-later license allows use under AGPL-3.0
+
+For complete license texts, please refer to:
+- AGPL-3.0: https://www.gnu.org/licenses/agpl-3.0.html
+- MIT: https://opensource.org/licenses/MIT
+- Apache-2.0: https://www.apache.org/licenses/LICENSE-2.0
+- ISC: https://opensource.org/licenses/ISC
+- BSD-3-Clause: https://opensource.org/licenses/BSD-3-Clause
+
+---
+
+This NOTICE file is provided in compliance with the attribution requirements of the various open source licenses used in this project.
