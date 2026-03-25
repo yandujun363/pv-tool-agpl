@@ -1435,47 +1435,11 @@ async function doImportProject(file: File) {
   try {
     const { project, mediaFile, audioFile, lrcContent } = await importProject(file);
     
-    // 恢复 Effects 勾选状态（提前恢复，因为后面可能需要用到）
-    const effectsSet = new Set(project.config.effects);
-    const checks = effectGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
-    checks.forEach((cb) => {
-      cb.checked = effectsSet.has(cb.dataset.effectIdx!);
-    });
+    // ========== 第一步：先恢复所有配置状态（不触发模板加载）==========
     
-    // 恢复模板选择
-    const templateVal = project.config.template;
-    if (templateVal === 'custom' && project.config.templateConfig) {
-      // 导入自定义模板 - 直接加载，不添加到列表
-      isCustomMode = true;
-      customPanel.style.display = '';
-      // 直接加载自定义模板配置
-      engine.loadTemplate(project.config.templateConfig);
-      templateSelect.value = 'custom';
-    } else if (typeof templateVal === 'string' && templateVal.startsWith('user-')) {
-      // 已存在的用户模板
-      isCustomMode = false;
-      customPanel.style.display = 'none';
-      const idx = parseInt(templateVal.split('-')[1]);
-      if (idx >= 0 && idx < customTemplates.length) {
-        templateSelect.value = templateVal;
-        engine.loadTemplate(customTemplates[idx]);
-      } else {
-        templateSelect.value = '0';
-        engine.loadTemplate(templates[0]);
-      }
-    } else {
-      // 内置模板
-      isCustomMode = false;
-      customPanel.style.display = 'none';
-      const idx = parseInt(String(templateVal));
-      templateSelect.value = String(idx);
-      engine.loadTemplate(templates[idx] || templates[0]);
-    }
-    
-    // 恢复画布颜色
+    // 1. 恢复画布颜色
     if (project.config.canvasColor) {
       engine.canvasColor = project.config.canvasColor;
-      // 更新 swatch 高亮
       const swatch = document.querySelector(`.swatch[data-color="${project.config.canvasColor}"]`);
       if (swatch) {
         document.querySelectorAll('.swatch').forEach(s => s.classList.remove('swatch-active'));
@@ -1485,63 +1449,132 @@ async function doImportProject(file: File) {
       }
     }
     
-    // 恢复文本
+    // 2. 恢复文本
     textInput.value = project.config.text;
-    engine.setText(project.config.text);
     
-    // 恢复滑块值
+    // 3. 恢复滑块值（只更新显示，不触发 engine 更新，因为后面会统一加载模板）
     segSlider.value = String(project.config.segmentDuration);
     segVal.textContent = `${project.config.segmentDuration.toFixed(1)}s`;
-    engine.segmentDuration = project.config.segmentDuration;
     
     speedSlider.value = String(project.config.animationSpeed);
     speedVal.textContent = `${project.config.animationSpeed.toFixed(1)}x`;
-    engine.animationSpeed = project.config.animationSpeed;
     
     motionSlider.value = String(project.config.motionIntensity);
     motionVal.textContent = `${project.config.motionIntensity.toFixed(1)}x`;
-    engine.motionIntensity = project.config.motionIntensity;
     
     opacitySlider.value = String(project.config.effectOpacity);
     opacityVal.textContent = `${Math.round(project.config.effectOpacity * 100)}%`;
-    engine.effectOpacity = project.config.effectOpacity;
     
-    // 恢复 PostFX
-    engine.shake = project.config.postfx.shake;
+    // 4. 恢复 PostFX（只更新显示）
     shakeSlider.value = String(project.config.postfx.shake);
     shakeVal.textContent = project.config.postfx.shake.toFixed(2);
     
-    engine.zoom = project.config.postfx.zoom;
     zoomSlider.value = String(project.config.postfx.zoom);
     zoomVal.textContent = project.config.postfx.zoom.toFixed(2);
     
-    engine.tilt = project.config.postfx.tilt;
     tiltSlider.value = String(project.config.postfx.tilt);
     tiltVal.textContent = `${(project.config.postfx.tilt * 17.2).toFixed(0)}°`;
     
-    engine.glitch = project.config.postfx.glitch;
     glitchSlider.value = String(project.config.postfx.glitch);
     glitchVal.textContent = project.config.postfx.glitch.toFixed(2);
     
-    engine.hueShift = project.config.postfx.hueShift;
     hueSlider.value = String(project.config.postfx.hueShift);
     hueVal.textContent = `${project.config.postfx.hueShift}°`;
     
-    // 恢复 BPM
-    engine.beat.bpm = project.config.bpm;
+    // 5. 恢复 BPM 和 Beat Reactivity
     bpmSlider.value = String(project.config.bpm);
     bpmVal.textContent = String(project.config.bpm);
     
-    // 恢复 Beat Reactivity
-    engine.beatReactivity = project.config.beatReactivity;
     beatSlider.value = String(project.config.beatReactivity);
     beatVal.textContent = project.config.beatReactivity.toFixed(2);
     
-    // 恢复 Alpha Mode
+    // 6. 恢复 Alpha Mode
     alphaToggle.checked = project.config.alphaMode;
+    
+    // 7. 恢复 Effects 勾选状态（这是最关键的一步）
+    const effectsSet = new Set(project.config.effects);
+    const checks = effectGrid.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+    checks.forEach((cb) => {
+      cb.checked = effectsSet.has(cb.dataset.effectIdx!);
+    });
+    
+    // ========== 第二步：确定模板类型并准备模板配置 ==========
+    
+    let targetTemplate: TemplateConfig;
+    let templateValue: string;
+    let isCustom = false;
+    
+    const templateVal = project.config.template;
+    
+    if (templateVal === 'custom' && project.config.templateConfig) {
+      // 自定义模板 - 使用保存的配置
+      targetTemplate = project.config.templateConfig;
+      templateValue = 'custom';
+      isCustom = true;
+    } else if (typeof templateVal === 'string' && templateVal.startsWith('user-')) {
+      // 已存在的用户模板
+      const idx = parseInt(templateVal.split('-')[1]);
+      if (idx >= 0 && idx < customTemplates.length) {
+        targetTemplate = customTemplates[idx];
+        templateValue = templateVal;
+      } else {
+        targetTemplate = templates[0];
+        templateValue = '0';
+      }
+      isCustom = false;
+    } else {
+      // 内置模板
+      const idx = parseInt(String(templateVal));
+      targetTemplate = templates[idx] || templates[0];
+      templateValue = String(idx);
+      isCustom = false;
+    }
+    
+    // 如果是 custom 模式，需要用当前复选框状态重新构建模板
+    if (isCustom) {
+      // 注意：这里使用 buildCustomTemplate() 而不是 project.config.templateConfig
+      // 因为复选框可能已经被恢复，需要基于当前的复选框状态重新构建
+      targetTemplate = buildCustomTemplate();
+    }
+    
+    // ========== 第三步：更新 UI 状态 ==========
+    
+    // 更新模板选择器
+    templateSelect.value = templateValue;
+    
+    // 更新 custom panel 显示状态
+    if (isCustom) {
+      isCustomMode = true;
+      customPanel.style.display = '';
+    } else {
+      isCustomMode = false;
+      customPanel.style.display = 'none';
+    }
+    
+    // ========== 第四步：加载模板到引擎（一次性完成）==========
+    
+    // 加载模板前，先设置一些需要通过 engine 直接设置的属性
+    engine.segmentDuration = project.config.segmentDuration;
+    engine.animationSpeed = project.config.animationSpeed;
+    engine.motionIntensity = project.config.motionIntensity;
+    engine.effectOpacity = project.config.effectOpacity;
+    engine.shake = project.config.postfx.shake;
+    engine.zoom = project.config.postfx.zoom;
+    engine.tilt = project.config.postfx.tilt;
+    engine.glitch = project.config.postfx.glitch;
+    engine.hueShift = project.config.postfx.hueShift;
+    engine.beat.bpm = project.config.bpm;
+    engine.beatReactivity = project.config.beatReactivity;
     engine.alphaMode = project.config.alphaMode;
     
-    // 恢复媒体资源
+    // 加载模板（这会应用所有的效果器）
+    engine.loadTemplate(targetTemplate);
+    
+    // 加载文本（必须在模板加载之后，因为 setText 可能会重新加载模板）
+    engine.setText(project.config.text);
+    
+    // ========== 第五步：恢复媒体资源 ==========
+    
     if (mediaFile) {
       mediaInput.files = null;
       const dataTransfer = new DataTransfer();
@@ -1551,13 +1584,11 @@ async function doImportProject(file: File) {
       document.getElementById('media-pick-name')!.textContent = mediaFile.name;
       mediaModeGroup.style.display = 'flex';
       
-      // 应用媒体并恢复位置
       const mode = project.config.mediaMode;
       await engine.addMedia(mediaFile, mode);
       engine.setMediaOffset(project.config.mediaOffset.x, project.config.mediaOffset.y);
       engine.setMediaScale(project.config.mediaOffset.scale);
       
-      // 恢复滑块
       mediaXSlider.value = String(project.config.mediaOffset.x);
       mediaYSlider.value = String(project.config.mediaOffset.y);
       mediaScaleSlider.value = String(project.config.mediaOffset.scale);
@@ -1568,7 +1599,8 @@ async function doImportProject(file: File) {
       pendingFile = null;
     }
     
-    // 恢复音频
+    // ========== 第六步：恢复音频 ==========
+    
     if (audioFile) {
       const audioPickName = document.getElementById('audio-pick-name')!;
       audioPickName.textContent = audioFile.name;
@@ -1578,26 +1610,19 @@ async function doImportProject(file: File) {
       audioToggle.textContent = t('pause');
     }
     
-    // 恢复 LRC
+    // ========== 第七步：恢复 LRC ==========
+    
     if (lrcContent) {
       lrcPickName.textContent = project.resources.lrc?.name || t('lrc_imported');
       textInput.value = lrcContent;
       applyTextInput(lrcContent);
     }
     
-    // 【关键修复】如果是 custom 模式，强制重建并重新加载模板
-    if (templateSelect.value === 'custom') {
-      // 重新构建并加载自定义模板
-      const customTpl = buildCustomTemplate();
-      engine.loadTemplate(customTpl);
-    }
+    // ========== 第八步：同步所有 UI 显示 ==========
     
-    // 同步所有显示值（确保滑块显示与实际值一致）
     syncSpeedSlider();
     syncOpacitySlider();
     syncPostfxSliders();
-    
-    // 更新模板按钮显示状态
     updateTemplateButtons();
     
     showToast(t('import_success'));
