@@ -442,7 +442,7 @@ engine.init(container).then(() => {
     },
   };
 
-  console.log('PV Tool 已启动，可用命令:');
+  console.log('PV Tool Community Edition 已启动，可用命令:');
   console.log('  window.__pv.getConfig() - 获取配置');
   console.log('  window.__pv.applyConfig() - 应用配置');
   console.log('  window.__pv.saveConfig() - 保存配置');
