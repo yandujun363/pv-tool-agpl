@@ -330,6 +330,19 @@ app.innerHTML = `
 const engine = new PVEngine();
 const container = document.getElementById('pv-container')!;
 
+declare global {
+  interface Window {
+    __pv: {
+      getConfig: () => any;
+      applyConfig: (config: any) => void;
+      saveConfig: () => void;
+      loadConfig: () => void;
+      exportConfig: () => void;
+    };
+  }
+}
+
+
 engine.init(container).then(() => {
   engine.setText('深夜東京/の6畳半夢/を見てた/灯りの灯らない蛍光灯/明日には消えてる電脳城/に/開幕戦/打ち上げて/いなくなんないよね/ここには誰もいない/ここには誰もいないから');
 
@@ -400,6 +413,41 @@ engine.init(container).then(() => {
     nwcListenToggle.checked = true;
     nwcListenToggle.dispatchEvent(new Event('change'));
   }
+
+  // 暴露到全局
+  window.__pv = {
+    getConfig: () => engine.getConfig(),
+    applyConfig: (config) => engine.applyConfig(config),
+    saveConfig: () => {
+      const config = engine.getConfig();
+      localStorage.setItem('pv-tool-config', JSON.stringify(config));
+      console.log('配置已保存到 localStorage');
+    },
+    loadConfig: () => {
+      const saved = localStorage.getItem('pv-tool-config');
+      if (saved) {
+        engine.applyConfig(JSON.parse(saved));
+        console.log('配置已加载');
+      }
+    },
+    exportConfig: () => {
+      const config = engine.getConfig();
+      const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pv-config-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+  };
+
+  console.log('PV Tool 已启动，可用命令:');
+  console.log('  window.__pv.getConfig() - 获取配置');
+  console.log('  window.__pv.applyConfig() - 应用配置');
+  console.log('  window.__pv.saveConfig() - 保存配置');
+  console.log('  window.__pv.loadConfig() - 加载配置');
+  console.log('  window.__pv.exportConfig() - 导出配置');
 });
 
 // Mobile toggle
