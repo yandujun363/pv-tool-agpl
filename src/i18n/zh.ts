@@ -73,6 +73,25 @@ export const zh = {
   'lrc_import': '导入 LRC',
   'timer_label': '计时 Time',
 
+
+  'render': '渲染设置',
+  'render_resolution': '渲染分辨率',
+  'render_resolution_auto': '自动 (根据性能)',
+  'render_resolution_1x': '1x (标准)',
+  'render_resolution_1_5x': '1.5x (高)',
+  'render_resolution_2x': '2x (超高)',
+  'render_resolution_custom': '自定义宽x高',
+  'render_resolution_width': '宽度',
+  'render_resolution_height': '高度',
+  'render_resolution_apply': '应用',
+  'render_fps': '帧率限制',
+  'render_fps_auto': '自动 (最高)',
+  'render_fps_30': '30 FPS',
+  'render_fps_60': '60 FPS',
+  'render_fps_custom': '自定义',
+  'render_fps_value': 'FPS',
+  'render_fps_current': '当前帧率: {fps}',
+
   // Right panel — Export
   'export': '导出 Export',
   'copy_url': '复制 URL',

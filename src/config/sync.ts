@@ -125,4 +125,32 @@ export function syncUIFromConfig(
       engine.wesingCapListening = true;
     }
   }
+
+  // 同步渲染设置
+  if (config.render.targetResolution !== undefined) {
+    const resolution = config.render.targetResolution;
+    if (resolution === 'auto') {
+      ui.resolutionSelect.value = 'auto';
+      ui.customResolutionGroup.style.display = 'none';
+    } else if (typeof resolution === 'number') {
+      ui.resolutionSelect.value = String(resolution);
+      ui.customResolutionGroup.style.display = 'none';
+    } else if (typeof resolution === 'object') {
+      ui.resolutionSelect.value = 'custom';
+      ui.customResolutionGroup.style.display = 'flex';
+      ui.customWidth.value = String(resolution.width);
+      ui.customHeight.value = String(resolution.height);
+    }
+  }
+
+  if (config.render.targetFps !== undefined) {
+    const fps = config.render.targetFps;
+    if (fps === 'auto') {
+      ui.fpsSelect.value = 'auto';
+      ui.customFpsGroup.style.display = 'none';
+    } else {
+      ui.fpsSelect.value = String(fps);
+      ui.customFpsGroup.style.display = 'none';
+    }
+  }
 }

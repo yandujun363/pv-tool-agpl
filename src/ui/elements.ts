@@ -73,6 +73,18 @@ export interface UIElements {
   hueSlider: HTMLInputElement;
   hueVal: HTMLElement;
 
+  // 渲染设置
+  resolutionSelect: HTMLSelectElement;
+  customResolutionGroup: HTMLElement;
+  customWidth: HTMLInputElement;
+  customHeight: HTMLInputElement;
+  applyResolutionBtn: HTMLButtonElement;
+  fpsSelect: HTMLSelectElement;
+  customFpsGroup: HTMLElement;
+  customFpsInput: HTMLInputElement;
+  applyFpsBtn: HTMLButtonElement;
+  fpsCurrent: HTMLElement;
+
   // Media
   mediaPickBtn: HTMLButtonElement;
   mediaPickName: HTMLElement;
@@ -170,6 +182,17 @@ export function getUIElements(): UIElements {
     glitchVal: document.getElementById('glitch-val')!,
     hueSlider: document.getElementById('hue-slider') as HTMLInputElement,
     hueVal: document.getElementById('hue-val')!,
+
+    resolutionSelect: document.getElementById('resolution-select') as HTMLSelectElement,
+    customResolutionGroup: document.getElementById('custom-resolution-group')!,
+    customWidth: document.getElementById('custom-width') as HTMLInputElement,
+    customHeight: document.getElementById('custom-height') as HTMLInputElement,
+    applyResolutionBtn: document.getElementById('apply-resolution-btn') as HTMLButtonElement,
+    fpsSelect: document.getElementById('fps-select') as HTMLSelectElement,
+    customFpsGroup: document.getElementById('custom-fps-group')!,
+    customFpsInput: document.getElementById('custom-fps') as HTMLInputElement,
+    applyFpsBtn: document.getElementById('apply-fps-btn') as HTMLButtonElement,
+    fpsCurrent: document.getElementById('fps-current')!,
 
     mediaPickBtn: document.getElementById('media-pick-btn') as HTMLButtonElement,
     mediaPickName: document.getElementById('media-pick-name')!,

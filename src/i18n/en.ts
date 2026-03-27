@@ -75,6 +75,25 @@ export const en: Record<LocaleKey, string> = {
   'lrc_import': 'Import LRC',
   'timer_label': 'Time',
 
+
+  'render': 'Render Settings',
+  'render_resolution': 'Render Resolution',
+  'render_resolution_auto': 'Auto (Performance Based)',
+  'render_resolution_1x': '1x (Standard)',
+  'render_resolution_1_5x': '1.5x (High)',
+  'render_resolution_2x': '2x (Ultra)',
+  'render_resolution_custom': 'Custom WxH',
+  'render_resolution_width': 'Width',
+  'render_resolution_height': 'Height',
+  'render_resolution_apply': 'Apply',
+  'render_fps': 'FPS Limit',
+  'render_fps_auto': 'Auto (Max)',
+  'render_fps_30': '30 FPS',
+  'render_fps_60': '60 FPS',
+  'render_fps_custom': 'Custom',
+  'render_fps_value': 'FPS',
+  'render_fps_current': 'Current FPS: {fps}',
+
   // Right panel — Export
   'export': 'Export',
   'copy_url': 'Copy URL',
