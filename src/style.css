@@ -17,7 +17,9 @@
  * GNU Affero General Public License for more details.
  * 
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ * 
+ * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
 :root {
@@ -870,4 +872,55 @@ body.pv-panels-hidden .mobile-toggle {
 
 .pv-project-export-dialog .effect-toggle input {
     margin-right: 8px;
+}
+
+/* Global footer - AGPL required notice */
+.global-footer {
+  position: fixed;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  background: transparent;
+  pointer-events: none;
+  z-index: 1000;
+  font-family: monospace;
+}
+
+.global-footer a {
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  pointer-events: auto;
+  margin-left: 12px;
+}
+
+.global-footer a:hover {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: underline;
+}
+
+.global-footer .footer-links {
+  margin-left: 8px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .global-footer {
+    bottom: 4px;
+    font-size: 8px;
+  }
+  .global-footer .footer-links {
+    display: inline-block;
+    margin-left: 4px;
+  }
+  .global-footer a {
+    margin-left: 6px;
+  }
+}
+
+/* 当面板隐藏时，页脚也稍微淡化（可选） */
+body.pv-panels-hidden .global-footer {
+  opacity: 0.5;
 }

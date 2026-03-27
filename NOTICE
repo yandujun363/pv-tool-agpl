@@ -13,7 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
 
 ---
 
@@ -51,6 +51,12 @@ This project incorporates the following third-party software:
 - License: MIT
 - Copyright: Copyright (c) 2021 ElMassimo
 - Source: https://github.com/ElMassimo/vite-plugin-full-reload
+
+**@types/node** (version 25.5.0)
+- License: MIT
+- Copyright: DefinitelyTyped Contributors
+- Source: https://github.com/DefinitelyTyped/DefinitelyTyped
+- Description: TypeScript definitions for Node.js
 
 ---
 

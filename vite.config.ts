@@ -45,6 +45,9 @@ export default defineConfig({
     cssCodeSplit: true,
     sourcemap: true
   },
+  esbuild: {
+    legalComments: 'inline',
+  },
   optimizeDeps: {
     include: ['pixi.js', 'jszip', 'vue']
   }

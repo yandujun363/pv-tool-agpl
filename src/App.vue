@@ -17,7 +17,9 @@
   GNU Affero General Public License for more details.
   
   You should have received a copy of the GNU Affero General Public License
-  along with this program. If not, see <https://www.gnu.org/licenses/>.
+  along with this program. If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+
+  Source repository: https://github.com/yandujun363/pv-tool-agpl
 -->
 
 <template>
@@ -295,6 +297,15 @@
 
   <button class="mobile-toggle" id="mobile-toggle" title="☰">☰</button>
   <div id="pv-container"></div>
+  <footer class="global-footer">
+  <div class="footer-content">
+    <span>© 2026 PV Tool — AGPL Community Edition</span>
+    <span class="footer-links">
+      <a href="https://github.com/yandujun363/pv-tool-agpl" target="_blank" rel="noopener noreferrer">源代码</a>
+      <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank" rel="noopener noreferrer">AGPL-3.0 协议</a>
+    </span>
+  </div>
+</footer>
 </template>
 
 <script lang="ts">
