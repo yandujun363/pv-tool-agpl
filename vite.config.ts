@@ -1,11 +1,20 @@
 import { defineConfig } from 'vite';
-import FullReload from 'vite-plugin-full-reload';
+import vue from '@vitejs/plugin-vue';
+import path from 'path';
 
 export default defineConfig({
+  plugins: [vue()],
   base: '/',
-  plugins: [
-    FullReload(['src/**/*']),
-  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@core': path.resolve(__dirname, './src/core'),
+      '@effects': path.resolve(__dirname, './src/effects'),
+      '@templates': path.resolve(__dirname, './src/templates'),
+      '@config': path.resolve(__dirname, './src/config'),
+      '@i18n': path.resolve(__dirname, './src/i18n'),
+    }
+  },
   build: {
     rollupOptions: {
       output: {
@@ -22,15 +31,14 @@ export default defineConfig({
           if (id.includes('/templates/')) {
             return 'templates';
           }
-          if (id.includes('/ui/')) {
-            return 'ui';
+          if (id.includes('node_modules/vue')) {
+            return 'vue';
           }
           if (id.includes('node_modules')) {
             return 'vendor';
           }
           return undefined;
         },
-        // 统一所有 chunk 的命名格式
         entryFileNames: 'assets/[name].[hash].js',
         chunkFileNames: 'assets/[name].[hash].js',
         assetFileNames: 'assets/[name].[hash].[ext]'
@@ -41,7 +49,6 @@ export default defineConfig({
     sourcemap: true
   },
   optimizeDeps: {
-    include: ['pixi.js', 'jszip'],
-    exclude: []
+    include: ['pixi.js', 'jszip', 'vue']
   }
 });
