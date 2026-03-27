@@ -31,9 +31,6 @@ export default defineConfig({
           if (id.includes('/templates/')) {
             return 'templates';
           }
-          if (id.includes('node_modules/vue')) {
-            return 'vue';
-          }
           if (id.includes('node_modules')) {
             return 'vendor';
           }
