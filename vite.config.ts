@@ -37,7 +37,8 @@ export default defineConfig({
       }
     },
     chunkSizeWarningLimit: 800,
-    cssCodeSplit: true
+    cssCodeSplit: true,
+    sourcemap: true
   },
   optimizeDeps: {
     include: ['pixi.js', 'jszip'],
