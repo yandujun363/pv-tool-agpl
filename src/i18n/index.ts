@@ -47,8 +47,24 @@ function detectLocale(): Locale {
 
 export const locale: Locale = detectLocale();
 
-export function t(key: LocaleKey): string {
-  return locales[locale]?.[key] ?? locales.zh[key] ?? key;
+export function t(key: string, params?: Record<string, string | number | undefined>): string {
+  let text = locales[locale]?.[key as LocaleKey] ?? locales.zh[key as LocaleKey] ?? key;
+  
+  if (params && Object.keys(params).length > 0) {
+    text = text.replace(/\{([^}]+)\}/g, (match, paramKey) => {
+      const trimmedKey = paramKey.trim();
+      const value = params[trimmedKey];
+
+      if (value === undefined) {
+        console.warn(`Missing parameter "${trimmedKey}" for i18n key "${key}"`);
+        return match;
+      }
+      
+      return String(value);
+    });
+  }
+  
+  return text;
 }
 
 export { type LocaleKey };

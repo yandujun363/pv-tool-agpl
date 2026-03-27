@@ -26,6 +26,19 @@ import type { UIElements } from '../ui/elements';
 import { syncPostfxSliders } from '../ui/postfxPanel';
 import { syncUIFromConfig } from './sync';
 
+// 扩展 Window 接口
+declare global {
+  interface Window {
+    PvToolCeConfig: {
+      getConfig: () => UnifiedConfig;
+      applyConfig: (config: UnifiedConfig) => void;
+      saveConfig: () => void;
+      loadConfig: () => void;
+      exportConfig: () => void;
+    };
+  }
+}
+
 export function exposeGlobalConfigAPI(
   engine: PVEngine,
   ui: UIElements,
@@ -33,7 +46,7 @@ export function exposeGlobalConfigAPI(
 ): void {
   window.PvToolCeConfig = {
     getConfig: () => engine.getConfig(),
-    applyConfig: (config) => {
+    applyConfig: (config: UnifiedConfig) => {
       engine.applyConfig(config);
       syncUIFromConfig(engine, ui, config as UnifiedConfig, customTemplates);
       syncPostfxSliders(engine, ui);
