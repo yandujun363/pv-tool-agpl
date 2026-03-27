@@ -235,13 +235,17 @@
               <option value="1">{{ t("render_resolution_1x") }}</option>
               <option value="1.5">{{ t("render_resolution_1_5x") }}</option>
               <option value="2">{{ t("render_resolution_2x") }}</option>
-              <option value="custom">{{ t("render_resolution_custom") }}</option>
+              <option value="custom">
+                {{ t("render_resolution_custom") }}
+              </option>
             </select>
             <div id="custom-resolution-group" class="custom-resolution" style="display: none">
               <input type="number" id="custom-width" :placeholder="t('render_resolution_width')" step="1" min="320" />
               <span class="resolution-sep">x</span>
               <input type="number" id="custom-height" :placeholder="t('render_resolution_height')" step="1" min="240" />
-              <button class="btn btn-sm" id="apply-resolution-btn">{{ t("render_resolution_apply") }}</button>
+              <button class="btn btn-sm" id="apply-resolution-btn">
+                {{ t("render_resolution_apply") }}
+              </button>
             </div>
           </div>
         </div>
@@ -257,7 +261,9 @@
             </select>
             <div id="custom-fps-group" class="custom-fps" style="display: none">
               <input type="number" id="custom-fps" :placeholder="t('render_fps_value')" step="1" min="15" max="240" />
-              <button class="btn btn-sm" id="apply-fps-btn">{{ t("render_resolution_apply") }}</button>
+              <button class="btn btn-sm" id="apply-fps-btn">
+                {{ t("render_resolution_apply") }}
+              </button>
             </div>
           </div>
         </div>
@@ -394,7 +400,19 @@
   </div>
 
   <button class="mobile-toggle" id="mobile-toggle" title="☰">☰</button>
+
   <div id="pv-container"></div>
+
+  <div id="init-overlay" class="init-overlay" style="display: flex">
+    <div class="init-card">
+      <div class="init-spinner"></div>
+      <div class="init-text">
+        <div class="init-title">{{ t("initializing") }}</div>
+        <div class="init-desc">{{ t("initializing_desc") }}</div>
+      </div>
+    </div>
+  </div>
+
   <footer class="global-footer">
     <div class="footer-content">
       <span>{{ t("license_copyright") }}</span>

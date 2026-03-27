@@ -25,6 +25,8 @@
 export const zh = {
   // Page
   'page_title': 'PV Tool AGPL Community Edition - 日式PV Visual生成',
+  'initializing': '正在初始化 PV Tool AGPL Community Edition...',
+  'initializing_desc': '请稍候，首次加载需要检测显示器刷新率',
 
   // Panel titles
   'postfx': '後期 Post FX',
@@ -91,6 +93,7 @@ export const zh = {
   'render_fps_custom': '自定义',
   'render_fps_value': 'FPS',
   'render_fps_current': '当前帧率: {fps}',
+  'fps_warning_exceed_monitor': '设置的FPS({fps})超过显示器刷新率({max})，可能导致画面撕裂',
 
   // Right panel — Export
   'export': '导出 Export',

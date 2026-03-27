@@ -24,13 +24,15 @@
 
 import type { PVEngine } from '../core/engine';
 import type { UIElements } from './elements';
+import { t } from '../i18n';
+import { showToast } from '../core/uiHelpers';
 
 /**
  * 获取显示器支持的最大刷新率
- * 通过创建离屏canvas并检查性能或使用screen属性
+ * 通过 requestAnimationFrame 测量实际帧率
  */
-async function getMaxMonitorFps(): Promise<number> {
-  // 方法1: 使用 screen 属性（现代浏览器）
+async function getMaxMonitorFps(MEASURE_DURATION: number = 1000): Promise<number> {
+  // 注意：screen.refreshRate 属性不存在于任何浏览器中，保留此代码仅为兼容性考虑
   if ('screen' in window && 'refreshRate' in screen) {
     const refreshRate = (screen as any).refreshRate;
     if (refreshRate && typeof refreshRate === 'number') {
@@ -38,32 +40,49 @@ async function getMaxMonitorFps(): Promise<number> {
     }
   }
   
-  // 方法2: 检测常见刷新率
-  // 通过 requestAnimationFrame 快速测量
+  // 通过 requestAnimationFrame 测量
   return new Promise<number>((resolve) => {
     let frames = 0;
     let lastTime = performance.now();
+    let animationId: number;
     
     const measure = (now: number) => {
       frames++;
-      if (now - lastTime >= 100) {
-        // 快速估算，取整到常见值
-        const estimatedFps = Math.round(frames * 1000 / (now - lastTime));
-        const commonFps = [60, 120, 144, 165, 240, 360];
-        let bestMatch = 60;
-        for (const fps of commonFps) {
-          if (Math.abs(estimatedFps - fps) < 15) {
-            bestMatch = fps;
-            break;
-          }
+      const elapsed = now - lastTime;
+      
+      if (elapsed >= MEASURE_DURATION) {
+        // 停止测量
+        if (animationId) {
+          cancelAnimationFrame(animationId);
         }
-        resolve(bestMatch);
+        
+        // 计算实际平均帧率
+        const actualFps = (frames * 1000) / elapsed;
+        
+        // 四舍五入到最接近的整数
+        // 因为测量值通常略低于实际值（59.94 -> 60, 119.88 -> 120）
+        const roundedFps = Math.round(actualFps);
+        
+        resolve(roundedFps);
+        
         return;
       }
-      requestAnimationFrame(measure);
+      
+      animationId = requestAnimationFrame(measure);
     };
-    requestAnimationFrame(measure);
+    
+    animationId = requestAnimationFrame(measure);
   });
+}
+
+/**
+ * 显示/隐藏初始化浮层
+ */
+function setInitOverlayVisible(visible: boolean): void {
+  const overlay = document.getElementById('init-overlay');
+  if (overlay) {
+    overlay.style.display = visible ? 'flex' : 'none';
+  }
 }
 
 /**
@@ -92,21 +111,44 @@ function generateFpsOptions(maxFps: number): Array<{ value: number | 'auto'; lab
 
 /**
  * 更新FPS下拉框选项
+ * @param fpsSelect - select元素
+ * @param maxFps - 最大帧率
+ * @param currentValue - 当前选中值
+ * @param customOptions - 自定义选项（可以是 option 元素或配置对象）
  */
 function updateFpsSelectOptions(
   fpsSelect: HTMLSelectElement,
   maxFps: number,
-  currentValue: number | 'auto'
+  currentValue: number | 'auto',
+  customOptions: (HTMLOptionElement | { value: string | number; label: string; selected?: boolean; disabled?: boolean })[] = []
 ): void {
-  const options = generateFpsOptions(maxFps);
+  const defaultOptions = generateFpsOptions(maxFps);
   
-  // 清空并重新填充选项
+  // 清空 select
   fpsSelect.innerHTML = '';
-  for (const opt of options) {
+  
+  // 添加默认选项
+  for (const opt of defaultOptions) {
     const option = document.createElement('option');
     option.value = String(opt.value);
     option.textContent = opt.label;
     fpsSelect.appendChild(option);
+  }
+  
+  // 添加自定义选项
+  for (const customOpt of customOptions) {
+    if (customOpt instanceof HTMLOptionElement) {
+      // 直接使用 option 元素
+      fpsSelect.appendChild(customOpt);
+    } else {
+      // 根据配置对象创建 option
+      const option = document.createElement('option');
+      option.value = String(customOpt.value);
+      option.textContent = customOpt.label;
+      if (customOpt.selected) option.selected = true;
+      if (customOpt.disabled) option.disabled = true;
+      fpsSelect.appendChild(option);
+    }
   }
   
   // 恢复选中的值
@@ -119,6 +161,11 @@ function updateFpsSelectOptions(
 }
 
 export async function initRenderPanel(engine: PVEngine, ui: UIElements): Promise<void> {
+
+  engine.pauseRendering();
+  console.log('[RenderPanel] Paused rendering for FPS detection...');
+  setInitOverlayVisible(true);
+
   // 分辨率控制
   const resolutionSelect = ui.resolutionSelect;
   const customResolutionGroup = ui.customResolutionGroup;
@@ -133,19 +180,26 @@ export async function initRenderPanel(engine: PVEngine, ui: UIElements): Promise
   const applyFpsBtn = ui.applyFpsBtn;
   const fpsCurrent = ui.fpsCurrent;
 
-  // 获取最大显示器刷新率（异步）
+  // 先立即用默认值初始化 FPS 选择器
   let maxMonitorFps = 60;
-  try {
-    maxMonitorFps = await getMaxMonitorFps();
-  } catch (e) {
-    console.warn('Failed to detect max monitor FPS, using default 60', e);
-  }
-  updateFpsSelectOptions(fpsSelect, maxMonitorFps, engine.targetFps);
+  updateFpsSelectOptions(fpsSelect, maxMonitorFps, engine.targetFps, [{ value: 'custom', label: t("render_fps_custom"), selected: false }]);
+  
+  // 异步检测真实刷新率，不阻塞后续初始化
+  getMaxMonitorFps(1000)
+    .then(maxFps => {
+      maxMonitorFps = maxFps;
+      updateFpsSelectOptions(fpsSelect, maxMonitorFps, engine.targetFps, [{ value: 'custom', label: t("render_fps_custom"), selected: false }]);
+      engine.resumeRendering();
+      setInitOverlayVisible(false);
+    })
+    .catch(e => {
+      console.warn('Failed to detect max monitor FPS, using default 60', e);
+    });
 
   // 更新FPS显示（显示PIXI FPS和浏览器FPS）
   engine.onFpsUpdate = (pixiFps: number, browserFps: number) => {
-    // 显示当前PIXI更新频率（这是实际效果更新频率）
-    fpsCurrent.textContent = `${pixiFps} FPS`;
+    // 显示当前PIXI更新频率
+    fpsCurrent.textContent = `PIXI: ${pixiFps} FPS | Browser: ${browserFps} FPS`;
     fpsCurrent.title = `PIXI: ${pixiFps} FPS | Browser: ${browserFps} FPS`;
   };
 
@@ -211,25 +265,32 @@ export async function initRenderPanel(engine: PVEngine, ui: UIElements): Promise
   });
 
   // 应用自定义 FPS
-  applyFpsBtn.addEventListener('click', () => {
-    let fps = parseInt(customFpsInput.value);
-    
-    if (isNaN(fps)) return;
-    
-    const minFps = 10;
-    const maxFps = maxMonitorFps;
-    const finalFps = Math.min(maxFps, Math.max(minFps, fps));
-    
-    engine.targetFps = finalFps;
-    customFpsInput.value = String(finalFps);
-    
-    // 如果自定义FPS在预设选项中，切换回去
-    const optionExists = Array.from(fpsSelect.options).some(
-      opt => opt.value === String(finalFps)
-    );
-    if (optionExists) {
-      fpsSelect.value = String(finalFps);
-      customFpsGroup.style.display = 'none';
-    }
-  });
+    applyFpsBtn.addEventListener('click', () => {
+        let fps = parseInt(customFpsInput.value);
+        
+        if (isNaN(fps)) return;
+        
+        const minFps = 10;
+        // 允许超过显示器限制，但显示警告
+        let finalFps = Math.max(minFps, fps);
+        
+        if (finalFps > maxMonitorFps) {
+            showToast(t('fps_warning_exceed_monitor', {
+            fps: finalFps,
+            max: maxMonitorFps
+            }));
+        }
+        
+        engine.targetFps = finalFps;
+        customFpsInput.value = String(finalFps);
+        
+        // 如果自定义FPS在预设选项中，切换回去
+        const optionExists = Array.from(fpsSelect.options).some(
+            opt => opt.value === String(finalFps)
+        );
+        if (optionExists) {
+            fpsSelect.value = String(finalFps);
+            customFpsGroup.style.display = 'none';
+        }
+    });
 }

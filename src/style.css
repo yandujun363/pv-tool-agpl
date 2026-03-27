@@ -995,3 +995,87 @@ body.pv-panels-hidden .mobile-toggle {
   margin-left: 8px;
   font-weight: normal;
 }
+
+/* 初始化浮层 */
+.init-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgb(0, 0, 0);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.init-card {
+  background: rgba(30, 30, 40, 0.95);
+  border-radius: 20px;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  min-width: 280px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* 加载动画 */
+.init-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(102, 136, 204, 0.3);
+  border-top-color: #6688cc;
+  border-radius: 50%;
+  animation: init-spinner-spin 0.8s linear infinite;
+}
+
+@keyframes init-spinner-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.init-text {
+  text-align: center;
+}
+
+.init-title {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.init-desc {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .init-card {
+    padding: 20px 24px;
+    min-width: 240px;
+  }
+  
+  .init-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+  }
+  
+  .init-title {
+    font-size: 0.9rem;
+  }
+  
+  .init-desc {
+    font-size: 0.7rem;
+  }
+}

@@ -27,6 +27,8 @@ import type { LocaleKey } from './zh';
 export const en: Record<LocaleKey, string> = {
   // Page
   'page_title': 'PV Tool AGPL Community Edition - Japanese PV Visual Generator',
+  'initializing': 'Initializing PV Tool AGPL Community Edition...',
+  'initializing_desc': 'Please wait, detecting monitor refresh rate on first load',
 
   // Panel titles
   'postfx': 'Post FX',
@@ -93,6 +95,7 @@ export const en: Record<LocaleKey, string> = {
   'render_fps_custom': 'Custom',
   'render_fps_value': 'FPS',
   'render_fps_current': 'Current FPS: {fps}',
+  'fps_warning_exceed_monitor': 'Set FPS({fps}) exceeds monitor refresh rate({max}), may cause screen tearing',
 
   // Right panel — Export
   'export': 'Export',

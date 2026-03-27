@@ -89,6 +89,9 @@ export class PVEngine {
   // 标记是否已启动监控
   private _fpsMonitorStarted = false;
 
+  private _renderPaused = false;
+
+
   // 模块化组件 (公开以供其他模块访问)
   readonly beat = new BeatProvider();
   readonly media: MediaController;
@@ -169,6 +172,7 @@ export class PVEngine {
     this.playback.init();
 
     this.app.ticker.add((ticker) => {
+      if (this._renderPaused) return;
       const now = performance.now();
       const dt = (now - this.playback["_lastFrameTime"]) / 1000;
       this.playback["_lastFrameTime"] = now;
@@ -179,17 +183,7 @@ export class PVEngine {
       this.update(currentTime, ticker.deltaTime / 60);
     });
 
-    // 设置 ticker 回调
-    this.app.ticker.add((ticker) => {
-      const now = performance.now();
-      const dt = (now - this.playback["_lastFrameTime"]) / 1000;
-      this.playback["_lastFrameTime"] = now;
-
-      const currentTime = this.playback.updateTime(dt);
-      this._time = currentTime;
-
-      this.update(currentTime, ticker.deltaTime / 60);
-    });
+    this._renderPaused = true;
     
     // 启动FPS监控
     this.startFpsMonitor();
@@ -198,6 +192,31 @@ export class PVEngine {
     this.applyFpsLimit();
     this.applyResolution();
   }
+
+
+  /**
+   * 暂停渲染更新
+   */
+  pauseRendering(): void {
+    this._renderPaused = true;
+  }
+
+  /**
+   * 恢复渲染更新
+   */
+  resumeRendering(): void {
+    this._renderPaused = false;
+    // 重置时间基准，避免delta过大
+    this.playback["_lastFrameTime"] = performance.now();
+  }
+
+  /**
+   * 检查渲染是否已启动
+   */
+  get isRenderingPaused(): boolean {
+    return this._renderPaused;
+  }
+
 
 
   /**

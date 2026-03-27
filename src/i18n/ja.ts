@@ -27,6 +27,8 @@ import type { LocaleKey } from './zh';
 export const ja: Record<LocaleKey, string> = {
   // Page
   'page_title': 'PV Tool AGPL Community Edition - PVビジュアルジェネレーター',
+  'initializing': 'PV Tool AGPL Community Edition を初期化中...',
+  'initializing_desc': 'しばらくお待ちください。初回読み込み時にモニターのリフレッシュレートを検出します',
 
   // Panel titles
   'postfx': 'ポスト Post FX',
@@ -92,6 +94,7 @@ export const ja: Record<LocaleKey, string> = {
   'render_fps_custom': 'カスタム',
   'render_fps_value': 'FPS',
   'render_fps_current': '現在のFPS: {fps}',
+  'fps_warning_exceed_monitor': '設定されたFPS({fps})がモニターのリフレッシュレート({max})を超えています',
 
   // Right panel — Export
   'export': '書き出し Export',
