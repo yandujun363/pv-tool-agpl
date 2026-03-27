@@ -468,10 +468,10 @@
       </details>
 
       <div class="license-notice">
-        <div class="license-title">AGPL-3.0 开源协议</div>
+        <div class="license-title">{{ t("license_title") }}</div>
         <div class="license-text">
-          本工具基于 GNU Affero General Public License v3.0 开源。<br />
-          源代码：
+          {{ t("license_text") }}<br />
+          {{ t("license_source") }}：
           <a
             href="https://github.com/yandujun363/pv-tool-agpl"
             target="_blank"
@@ -481,7 +481,7 @@
           </a>
         </div>
         <div class="license-copyright">
-          © 2026 PV Tool — AGPL Community Edition
+          {{ t("license_copyright") }}
         </div>
       </div>
     </div>
@@ -565,19 +565,19 @@
   <div id="pv-container"></div>
   <footer class="global-footer">
     <div class="footer-content">
-      <span>© 2026 PV Tool — AGPL Community Edition</span>
+      <span>{{ t("license_copyright") }}</span>
       <span class="footer-links">
         <a
           href="https://github.com/yandujun363/pv-tool-agpl"
           target="_blank"
           rel="noopener noreferrer"
-          >源代码</a
+          >{{ t("license_source") }}</a
         >
         <a
           href="https://www.gnu.org/licenses/agpl-3.0.txt"
           target="_blank"
           rel="noopener noreferrer"
-          >AGPL-3.0 协议</a
+          >AGPL-3.0</a
         >
       </span>
     </div>

@@ -920,11 +920,6 @@ body.pv-panels-hidden .mobile-toggle {
   }
 }
 
-/* 当面板隐藏时，页脚也稍微淡化（可选） */
-body.pv-panels-hidden .global-footer {
-  opacity: 0.5;
-}
-
 /* 右侧面板中的版权声明（不可折叠） */
 .license-notice {
   margin-top: 16px;

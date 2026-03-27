@@ -273,4 +273,10 @@ export const en: Record<LocaleKey, string> = {
   'nwc_save': 'Save',
   'nwc_saved': 'Saved',
   'nwc_disconnected': 'WesingCap connection lost',
+
+  // Copyright
+  'license_title': 'AGPL-3.0 Open Source License',
+  'license_text': 'This tool is open source under the GNU Affero General Public License v3.0.',
+  'license_source': 'Source Code',
+  'license_copyright': '© 2026 PV Tool — AGPL Community Edition',
 };

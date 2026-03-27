@@ -273,6 +273,12 @@ export const zh = {
   'nwc_save': '保存',
   'nwc_saved': '已保存',
   'nwc_disconnected': 'WesingCap 连接已断开，监听已停止',
+
+  // Copyright
+  'license_title': 'AGPL-3.0 开源协议',
+  'license_text': '本工具基于 GNU Affero General Public License v3.0 开源。',
+  'license_source': '源代码',
+  'license_copyright': '© 2026 PV Tool — AGPL Community Edition',
 } as const;
 
 export type LocaleKey = keyof typeof zh;
