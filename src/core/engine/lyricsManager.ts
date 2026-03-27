@@ -34,7 +34,7 @@ export interface SrtEntry {
 
 export class LyricsManager extends EngineModule {
   private userText = '';
-  private textSegments: string[] = ['春を告げる'];
+  private textSegments: string[] = [''];
   private lyricTimeline: LyricLine[] | null = null;
   private lyricOffsetSeconds = 0;
   lyricCursor = 0;
