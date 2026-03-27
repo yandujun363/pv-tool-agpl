@@ -20,6 +20,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-// 重新导出引擎
-export { PVEngine } from './engine/index';
-export type { SrtEntry } from './engine/lyricsManager';
+import type { PVEngine } from './index';
+
+export abstract class EngineModule {
+  protected engine: PVEngine;
+  
+  constructor(engine: PVEngine) {
+    this.engine = engine;
+  }
+  
+  abstract init(): void;
+  abstract destroy(): void;
+}

@@ -24,6 +24,7 @@ import type { PVEngine } from '../core/engine';
 import { t } from '../i18n';
 import type { UIElements } from './elements';
 import { formatClock } from './utils';
+import JSZip from 'jszip';
 
 const templateSlugs = [
   'blueBold', 'kineticSplit', 'bluePlane', 'cyberGrunge', 'geometric',
@@ -86,7 +87,6 @@ export function initRecording(engine: PVEngine, ui: UIElements): void {
     ui.recLabel.textContent = t('packing');
     await new Promise(r => setTimeout(r, 200));
 
-    const JSZip = (await import('jszip')).default;
     const zip = new JSZip();
     const folder = zip.folder('frames')!;
     const totalFrames = pngFrameIndex;

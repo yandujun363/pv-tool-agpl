@@ -26,6 +26,7 @@ import { exportProject, importProject } from '../core/projectFile';
 import { showToast } from '../core/uiHelpers';
 import type { UIElements } from './elements';
 import type { UnifiedConfig } from '../core/unifiedConfig';
+import { parseLrc } from '../core/lrc';
 
 export function initExportImport(
   engine: PVEngine,
@@ -136,7 +137,6 @@ async function doImportProject(
       // Apply text input logic
       const hasTimestamps = /\[\d{1,2}:\d{2}/.test(lrcContent);
       if (hasTimestamps) {
-        const { parseLrc } = await import('../core/lrc');
         const parsed = parseLrc(lrcContent);
         if (parsed.length > 0) {
           engine.setLyricTimeline(parsed);
