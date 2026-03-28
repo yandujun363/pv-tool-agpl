@@ -152,6 +152,7 @@ export interface UnifiedConfig {
     targetResolution?: number | { width: number; height: number } | 'auto';
     targetFps?: number | 'auto';
     recordingFps?: number;
+    scaleMode: 'stretch' | 'contain';
   };
 
   // ========== 运动检测 ==========
@@ -271,6 +272,7 @@ export const DEFAULT_CONFIG: UnifiedConfig = {
     targetResolution: 'auto',
     targetFps: 'auto',
     recordingFps: 60,
+    scaleMode: 'contain',
   },
   motion: {
     enabled: false,

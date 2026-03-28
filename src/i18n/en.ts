@@ -96,6 +96,9 @@ export const en: Record<LocaleKey, string> = {
   'render_fps_value': 'FPS',
   'render_fps_current': 'Current FPS: {fps}',
   'fps_warning_exceed_monitor': 'Set FPS({fps}) exceeds monitor refresh rate({max}), may cause screen tearing',
+  'render_scale_mode': 'Scale Mode',
+  'scale_mode_stretch': 'Stretch (Full Screen)',
+  'scale_mode_contain': 'Maintain Aspect (Letterbox)',
 
   // Right panel — Export
   'export': 'Export',

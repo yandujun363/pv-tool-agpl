@@ -95,6 +95,9 @@ export const ja: Record<LocaleKey, string> = {
   'render_fps_value': 'FPS',
   'render_fps_current': '現在のFPS: {fps}',
   'fps_warning_exceed_monitor': '設定されたFPS({fps})がモニターのリフレッシュレート({max})を超えています',
+  'render_scale_mode': '画面スケールモード',
+  'scale_mode_stretch': '引き伸ばし (フルスクリーン)',
+  'scale_mode_contain': 'アスペクト比維持 (黒帯)',
 
   // Right panel — Export
   'export': '書き出し Export',

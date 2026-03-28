@@ -153,4 +153,9 @@ export function syncUIFromConfig(
       ui.customFpsGroup.style.display = 'none';
     }
   }
+
+  // 同步缩放模式
+  if (ui.scaleModeSelect && config.render.scaleMode) {
+    ui.scaleModeSelect.value = config.render.scaleMode;
+  }
 }

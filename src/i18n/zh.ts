@@ -94,7 +94,10 @@ export const zh = {
   'render_fps_value': 'FPS',
   'render_fps_current': '当前帧率: {fps}',
   'fps_warning_exceed_monitor': '设置的FPS({fps})超过显示器刷新率({max})，可能导致画面撕裂',
-
+  'render_scale_mode': '画面缩放模式',
+  'scale_mode_stretch': '拉伸填满 (全屏)',
+  'scale_mode_contain': '保持比例 (黑边)',
+  
   // Right panel — Export
   'export': '导出 Export',
   'copy_url': '复制 URL',

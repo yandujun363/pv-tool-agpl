@@ -72,6 +72,8 @@ export class PVEngine {
   private _targetResolution: number | { width: number; height: number } | 'auto' = 'auto';
   private _targetFps: number | 'auto' = 'auto';
   
+  private _scaleMode: 'stretch' | 'contain' = 'contain';
+
   // FPS监控数据
   private _pixiFps = 60;
   private _browserFps = 60;
@@ -270,6 +272,15 @@ export class PVEngine {
     }
   }
 
+  get scaleMode(): 'stretch' | 'contain' {
+    return this._scaleMode;
+  }
+  
+  set scaleMode(mode: 'stretch' | 'contain') {
+    this._scaleMode = mode;
+    this.applyResolution();
+  }
+
   set onFpsUpdate(callback: ((pixiFps: number, browserFps: number) => void) | null) {
     this._fpsCallback = callback;
   }
@@ -308,6 +319,7 @@ export class PVEngine {
     
     const baseWidth = parent.clientWidth;
     const baseHeight = parent.clientHeight;
+    const baseAspect = baseWidth / baseHeight;
     
     let targetWidth = baseWidth;
     let targetHeight = baseHeight;
@@ -328,12 +340,43 @@ export class PVEngine {
     this._currentResolution = resolution;
     this.app.renderer.resolution = resolution;
     
-    // 设置画布尺寸
+    // 设置画布实际分辨率
     this.app.renderer.resize(targetWidth, targetHeight);
-    this.app.canvas.style.width = `${baseWidth}px`;
-    this.app.canvas.style.height = `${baseHeight}px`;
     
-    // 更新背景填充
+    if (this._scaleMode === 'contain') {
+      // 保持比例模式：计算实际显示尺寸（不裁切，保留黑边）
+      const targetAspect = targetWidth / targetHeight;
+      let displayWidth: number;
+      let displayHeight: number;
+      
+      if (targetAspect > baseAspect) {
+        // 画布更宽 → 宽度填满容器，高度按比例缩小（上下黑边）
+        displayWidth = baseWidth;
+        displayHeight = baseWidth / targetAspect;
+      } else {
+        // 画布更高或相等 → 高度填满容器，宽度按比例缩小（左右黑边）
+        displayHeight = baseHeight;
+        displayWidth = baseHeight * targetAspect;
+      }
+      
+      // CSS 尺寸设为实际显示尺寸，居中显示
+      this.app.canvas.style.width = `${displayWidth}px`;
+      this.app.canvas.style.height = `${displayHeight}px`;
+      this.app.canvas.style.position = 'absolute';
+      this.app.canvas.style.top = '50%';
+      this.app.canvas.style.left = '50%';
+      this.app.canvas.style.transform = 'translate(-50%, -50%)';
+      // 确保背景透明/黑色
+      this.app.canvas.style.backgroundColor = '#000000';
+    } else {
+      // 拉伸模式：填满容器
+      this.app.canvas.style.width = `${baseWidth}px`;
+      this.app.canvas.style.height = `${baseHeight}px`;
+      this.app.canvas.style.position = '';
+      this.app.canvas.style.transform = '';
+      this.app.canvas.style.backgroundColor = '';
+    }
+    
     this.updateBgFill();
   }
 
@@ -764,6 +807,7 @@ export class PVEngine {
         canvasColor: this._bgColorOverride,
         targetResolution: this._targetResolution,
         targetFps: this._targetFps,
+        scaleMode: this._scaleMode,
       },
       motion: {
         enabled: this._motionDetectionEnabled,
@@ -866,6 +910,10 @@ export class PVEngine {
     }
     if (config.render?.targetFps !== undefined) {
       this.targetFps = config.render.targetFps;
+    }
+
+    if (config.render?.scaleMode !== undefined) {
+      this.scaleMode = config.render.scaleMode;
     }
 
     this.external.applyConfig(config);

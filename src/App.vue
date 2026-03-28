@@ -228,6 +228,14 @@
         <summary class="panel-title">{{ t("render") }}</summary>
 
         <div class="control-group">
+          <label>{{ t("render_scale_mode") }}</label>
+          <select id="scale-mode-select">
+            <option value="stretch">{{ t("scale_mode_stretch") }}</option>
+            <option value="contain">{{ t("scale_mode_contain") }}</option>
+          </select>
+        </div>
+
+        <div class="control-group">
           <label>{{ t("render_resolution") }}</label>
           <div class="resolution-controls">
             <select id="resolution-select">

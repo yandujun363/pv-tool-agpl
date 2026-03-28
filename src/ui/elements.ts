@@ -84,6 +84,7 @@ export interface UIElements {
   customFpsInput: HTMLInputElement;
   applyFpsBtn: HTMLButtonElement;
   fpsCurrent: HTMLElement;
+  scaleModeSelect: HTMLSelectElement;
 
   // Media
   mediaPickBtn: HTMLButtonElement;
@@ -193,6 +194,7 @@ export function getUIElements(): UIElements {
     customFpsInput: document.getElementById('custom-fps') as HTMLInputElement,
     applyFpsBtn: document.getElementById('apply-fps-btn') as HTMLButtonElement,
     fpsCurrent: document.getElementById('fps-current')!,
+    scaleModeSelect: document.getElementById('scale-mode-select') as HTMLSelectElement,
 
     mediaPickBtn: document.getElementById('media-pick-btn') as HTMLButtonElement,
     mediaPickName: document.getElementById('media-pick-name')!,
