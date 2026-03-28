@@ -53,7 +53,6 @@ export function initRecording(engine: PVEngine, ui: UIElements): void {
   let pngCaptureRaf = 0;
   let pngRecording = false;
   let pngLastCaptureTime = 0;
-  const PNG_FPS = 30;
 
   function showRecordingUI(): void {
     ui.recBtn.classList.add('recording');
@@ -68,11 +67,14 @@ export function initRecording(engine: PVEngine, ui: UIElements): void {
     ui.recTimer.style.display = 'none';
   }
 
-  function capturePngFrame(canvas: HTMLCanvasElement) {
+  /**
+   * 使用用户设置的FPS捕获PNG帧
+   */
+  function capturePngFrame(canvas: HTMLCanvasElement, targetFps: number) {
     if (!pngRecording) return;
 
     const now = performance.now();
-    const interval = 1000 / PNG_FPS;
+    const interval = 1000 / targetFps;
 
     if (now - pngLastCaptureTime >= interval) {
       pngLastCaptureTime = now;
@@ -82,10 +84,10 @@ export function initRecording(engine: PVEngine, ui: UIElements): void {
       }, 'image/png');
     }
 
-    pngCaptureRaf = requestAnimationFrame(() => capturePngFrame(canvas));
+    pngCaptureRaf = requestAnimationFrame(() => capturePngFrame(canvas, targetFps));
   }
 
-  async function finishPngExport(slug: string): Promise<void> {
+  async function finishPngExport(slug: string, fps: number): Promise<void> {
     ui.recLabel.textContent = t('packing');
     await new Promise(r => setTimeout(r, 200));
 
@@ -97,12 +99,12 @@ export function initRecording(engine: PVEngine, ui: UIElements): void {
         folder.file(`frame_${String(i).padStart(5, '0')}.png`, pngFrameBuffer[i]);
       }
     }
-    zip.file('.pv', JSON.stringify({ v: '0914', t: Date.now(), fps: PNG_FPS, f: totalFrames }));
+    zip.file('.pv', JSON.stringify({ v: '0914', t: Date.now(), fps, f: totalFrames }));
     const content = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(content);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `pv-${slug}-${PNG_FPS}fps-${Date.now()}.zip`;
+    a.download = `pv-${slug}-${fps}fps-${Date.now()}.zip`;
     a.click();
     URL.revokeObjectURL(url);
     pngFrameBuffer = {};
@@ -113,6 +115,9 @@ export function initRecording(engine: PVEngine, ui: UIElements): void {
   ui.recBtn.addEventListener('click', () => {
     const useAlpha = engine.alphaMode;
     const slug = getTemplateSlug(ui.templateSelect);
+    
+    // 获取用户设置的录制FPS
+    const recordingFps = engine.getRecordingFps();
 
     // Alpha mode: PNG sequence capture
     if (useAlpha) {
@@ -121,7 +126,7 @@ export function initRecording(engine: PVEngine, ui: UIElements): void {
         cancelAnimationFrame(pngCaptureRaf);
         if (recTimerInterval) { clearInterval(recTimerInterval); recTimerInterval = null; }
         hideRecordingUI();
-        finishPngExport(slug);
+        finishPngExport(slug, recordingFps);
         return;
       }
 
@@ -134,7 +139,7 @@ export function initRecording(engine: PVEngine, ui: UIElements): void {
       recTimerInterval = setInterval(() => {
         ui.recTimer.textContent = formatClock((performance.now() - recStartTime) / 1000);
       }, 500);
-      capturePngFrame(engine.canvas);
+      capturePngFrame(engine.canvas, recordingFps);
       return;
     }
 
@@ -145,16 +150,14 @@ export function initRecording(engine: PVEngine, ui: UIElements): void {
     }
 
     const canvas = engine.canvas;
-    const stream = canvas.captureStream(60);
+    
+    // 使用用户设置的FPS捕获画布流
+    const stream = canvas.captureStream(recordingFps);
+    
+    // 暂时不处理音频，先解决FPS统一问题
+    // 音频处理后续单独修复
 
-    if (engine.beat.audioContext && engine.beat.sourceNode) {
-      const dest = engine.beat.audioContext.createMediaStreamDestination();
-      engine.beat.sourceNode.connect(dest);
-      for (const track of dest.stream.getAudioTracks()) {
-        stream.addTrack(track);
-      }
-    }
-
+    // 选择编码格式
     const mp4Supported = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1');
     const mimeType = mp4Supported
       ? 'video/mp4;codecs=avc1'
@@ -179,7 +182,7 @@ export function initRecording(engine: PVEngine, ui: UIElements): void {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `pv-${slug}-${Date.now()}.${ext}`;
+      a.download = `pv-${slug}-${recordingFps}fps-${Date.now()}.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
     };

@@ -27,6 +27,8 @@ import type { LocaleKey } from './zh';
 export const en: Record<LocaleKey, string> = {
   // Page
   'page_title': 'PV Tool AGPL Community Edition - Japanese PV Visual Generator',
+  'initializing': 'Initializing PV Tool AGPL Community Edition...',
+  'initializing_desc': 'Please wait, detecting monitor refresh rate on first load',
 
   // Panel titles
   'postfx': 'Post FX',
@@ -74,6 +76,29 @@ export const en: Record<LocaleKey, string> = {
   'srt_import': 'SRT Timeline',
   'lrc_import': 'Import LRC',
   'timer_label': 'Time',
+
+
+  'render': 'Render Settings',
+  'render_resolution': 'Render Resolution',
+  'render_resolution_auto': 'Auto (Performance Based)',
+  'render_resolution_1x': '1x (Standard)',
+  'render_resolution_1_5x': '1.5x (High)',
+  'render_resolution_2x': '2x (Ultra)',
+  'render_resolution_custom': 'Custom WxH',
+  'render_resolution_width': 'Width',
+  'render_resolution_height': 'Height',
+  'render_resolution_apply': 'Apply',
+  'render_fps': 'FPS Limit',
+  'render_fps_auto': 'Auto (Max)',
+  'render_fps_30': '30 FPS',
+  'render_fps_60': '60 FPS',
+  'render_fps_custom': 'Custom',
+  'render_fps_value': 'FPS',
+  'render_fps_current': 'Current FPS: {fps}',
+  'fps_warning_exceed_monitor': 'Set FPS({fps}) exceeds monitor refresh rate({max}), may cause screen tearing',
+  'render_scale_mode': 'Scale Mode',
+  'scale_mode_stretch': 'Stretch (Full Screen)',
+  'scale_mode_contain': 'Maintain Aspect (Letterbox)',
 
   // Right panel — Export
   'export': 'Export',

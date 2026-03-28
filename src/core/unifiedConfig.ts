@@ -143,12 +143,16 @@ export interface UnifiedConfig {
     paused: boolean;
   };
 
-  // ========== 渲染 ==========
+  // ========== 渲染设置 ==========
   render: {
     screenWidth: number;
     screenHeight: number;
-    resolution: number;     // 当前渲染分辨率
-    canvasColor: string | null; // 画布背景色覆盖
+    resolution: number;
+    canvasColor: string | null;
+    targetResolution?: number | { width: number; height: number } | 'auto';
+    targetFps?: number | 'auto';
+    recordingFps?: number;
+    scaleMode: 'stretch' | 'contain';
   };
 
   // ========== 运动检测 ==========
@@ -265,6 +269,10 @@ export const DEFAULT_CONFIG: UnifiedConfig = {
     screenHeight: 0,
     resolution: 1,
     canvasColor: null,
+    targetResolution: 'auto',
+    targetFps: 'auto',
+    recordingFps: 60,
+    scaleMode: 'contain',
   },
   motion: {
     enabled: false,

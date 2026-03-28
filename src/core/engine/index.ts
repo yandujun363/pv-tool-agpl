@@ -69,6 +69,33 @@ export class PVEngine {
   private glitchFilter: GlitchFilter;
   private bgFill!: PIXI.Graphics;
 
+  private _targetResolution: number | { width: number; height: number } | 'auto' = 'auto';
+  private _targetFps: number | 'auto' = 'auto';
+  
+  private _scaleMode: 'stretch' | 'contain' = 'contain';
+
+  // FPS监控数据
+  private _pixiFps = 60;
+  private _browserFps = 60;
+  private _fpsCallback: ((pixiFps: number, browserFps: number) => void) | null = null;
+  
+  // 浏览器FPS监控
+  private _rafId: number | null = null;
+  private _lastBrowserFpsUpdate = 0;
+  private _browserFrameCount = 0;
+  
+  // PIXI FPS监控
+  private _lastPixiFpsUpdate = 0;
+  private _pixiFrameCount = 0;
+
+  private _resizeObserver: ResizeObserver | null = null;
+
+  // 标记是否已启动监控
+  private _fpsMonitorStarted = false;
+
+  private _renderPaused = false;
+
+
   // 模块化组件 (公开以供其他模块访问)
   readonly beat = new BeatProvider();
   readonly media: MediaController;
@@ -88,10 +115,10 @@ export class PVEngine {
   private _nativeDPR = 1;
   private _currentResolution = 1;
   private _resizeParent: HTMLElement | null = null;
-  _loading = false; // 内部使用，供模块访问
+  private _loading = false; // 内部使用，供模块访问
   private _bgColorOverride: string | null = null;
   private _tick = 0;
-  _time = 0; // 内部使用，供模块访问
+  private _time = 0; // 内部使用，供模块访问
 
   constructor() {
     this.app = new PIXI.Application();
@@ -111,7 +138,7 @@ export class PVEngine {
     this._resizeParent = parent;
 
     await this.app.init({
-      resizeTo: parent,
+      resizeTo: undefined,
       backgroundColor: 0x000000,
       backgroundAlpha: 0,
       antialias: true,
@@ -120,6 +147,15 @@ export class PVEngine {
       preserveDrawingBuffer: true,
     });
     parent.appendChild(this.app.canvas);
+
+    this._resizeObserver = new ResizeObserver(() => {
+      this.applyResolution();
+    });
+    this._resizeObserver.observe(parent);
+
+    window.addEventListener('resize', () => {
+      this.applyResolution();
+    });
 
     // Media layer at the very bottom
     const mediaLayer = new PIXI.Container();
@@ -149,6 +185,7 @@ export class PVEngine {
     this.playback.init();
 
     this.app.ticker.add((ticker) => {
+      if (this._renderPaused) return;
       const now = performance.now();
       const dt = (now - this.playback["_lastFrameTime"]) / 1000;
       this.playback["_lastFrameTime"] = now;
@@ -158,6 +195,233 @@ export class PVEngine {
 
       this.update(currentTime, ticker.deltaTime / 60);
     });
+
+    this._renderPaused = true;
+    
+    // 启动FPS监控
+    this.startFpsMonitor();
+
+    // 应用初始FPS设置
+    this.applyFpsLimit();
+    this.applyResolution();
+  }
+
+
+  /**
+   * 暂停渲染更新
+   */
+  pauseRendering(): void {
+    this._renderPaused = true;
+  }
+
+  /**
+   * 恢复渲染更新
+   */
+  resumeRendering(): void {
+    this._renderPaused = false;
+    // 重置时间基准，避免delta过大
+    this.playback["_lastFrameTime"] = performance.now();
+  }
+
+  /**
+   * 检查渲染是否已启动
+   */
+  get isRenderingPaused(): boolean {
+    return this._renderPaused;
+  }
+
+
+
+  /**
+   * 启动双重FPS监控
+   * - 浏览器FPS: 通过 requestAnimationFrame 测量
+   * - PIXI FPS: 通过 PIXI ticker 测量实际更新频率
+   */
+  private startFpsMonitor(): void {
+    if (this._fpsMonitorStarted) return;
+    if (!this.app.ticker) {
+      console.warn('[PVEngine] Cannot start FPS monitor: app.ticker not ready');
+      return;
+    }
+    
+    this._fpsMonitorStarted = true;
+    
+    // 监控 PIXI ticker 的实际更新频率
+    this.app.ticker.add(() => {
+      const now = performance.now();
+      this._pixiFrameCount++;
+      
+      if (now - this._lastPixiFpsUpdate >= 1000) {
+        this._pixiFps = this._pixiFrameCount;
+        this._pixiFrameCount = 0;
+        this._lastPixiFpsUpdate = now;
+        this.notifyFpsUpdate();
+      }
+    });
+    
+    // 监控浏览器 requestAnimationFrame 的实际频率
+    const monitorBrowserFps = () => {
+      const now = performance.now();
+      this._browserFrameCount++;
+      
+      if (now - this._lastBrowserFpsUpdate >= 1000) {
+        this._browserFps = this._browserFrameCount;
+        this._browserFrameCount = 0;
+        this._lastBrowserFpsUpdate = now;
+        this.notifyFpsUpdate();
+      }
+      
+      this._rafId = requestAnimationFrame(monitorBrowserFps);
+    };
+    
+    this._rafId = requestAnimationFrame(monitorBrowserFps);
+  }
+
+  private notifyFpsUpdate(): void {
+    if (this._fpsCallback) {
+      this._fpsCallback(this._pixiFps, this._browserFps);
+    }
+  }
+
+  get scaleMode(): 'stretch' | 'contain' {
+    return this._scaleMode;
+  }
+  
+  set scaleMode(mode: 'stretch' | 'contain') {
+    this._scaleMode = mode;
+    this.applyResolution();
+  }
+
+  set onFpsUpdate(callback: ((pixiFps: number, browserFps: number) => void) | null) {
+    this._fpsCallback = callback;
+  }
+
+  get targetResolution(): typeof this._targetResolution {
+    return this._targetResolution;
+  }
+
+  set targetResolution(resolution: typeof this._targetResolution) {
+    this._targetResolution = resolution;
+    this.applyResolution();
+  }
+
+  get pixiFps(): number {
+    return this._pixiFps;
+  }
+
+  get browserFps(): number {
+    return this._browserFps;
+  }
+
+  get targetFps(): number | 'auto' {
+    return this._targetFps;
+  }
+
+  set targetFps(fps: number | 'auto') {
+    this._targetFps = fps;
+    this.applyFpsLimit();
+  }
+
+  private applyResolution(): void {
+    if (!this.app.renderer) return;
+    
+    const parent = this._resizeParent;
+    if (!parent) return;
+    
+    const baseWidth = parent.clientWidth;
+    const baseHeight = parent.clientHeight;
+    const baseAspect = baseWidth / baseHeight;
+    
+    let targetWidth: number;
+    let targetHeight: number;
+    let resolution = this._nativeDPR;
+    
+    if (this._targetResolution !== 'auto') {
+      if (typeof this._targetResolution === 'number') {
+        // 倍率模式：画布尺寸跟随窗口，分辨率倍率固定
+        resolution = this._targetResolution;
+        targetWidth = baseWidth;
+        targetHeight = baseHeight;
+      } else if (typeof this._targetResolution === 'object') {
+        // 自定义宽高模式
+        targetWidth = this._targetResolution.width;
+        targetHeight = this._targetResolution.height;
+        resolution = 1;
+      } else {
+        targetWidth = baseWidth;
+        targetHeight = baseHeight;
+      }
+    } else {
+      // 自动模式
+      targetWidth = baseWidth;
+      targetHeight = baseHeight;
+    }
+    
+    this._currentResolution = resolution;
+    this.app.renderer.resolution = resolution;
+    this.app.renderer.resize(targetWidth, targetHeight);
+    
+    // 根据缩放模式设置 CSS 样式
+    if (this._scaleMode === 'contain') {
+      // 保持比例模式
+      const targetAspect = targetWidth / targetHeight;
+      let displayWidth: number;
+      let displayHeight: number;
+      
+      if (targetAspect > baseAspect) {
+        displayWidth = baseWidth;
+        displayHeight = baseWidth / targetAspect;
+      } else {
+        displayHeight = baseHeight;
+        displayWidth = baseHeight * targetAspect;
+      }
+      
+      this.app.canvas.style.width = `${displayWidth}px`;
+      this.app.canvas.style.height = `${displayHeight}px`;
+      this.app.canvas.style.position = 'absolute';
+      this.app.canvas.style.top = '50%';
+      this.app.canvas.style.left = '50%';
+      this.app.canvas.style.transform = 'translate(-50%, -50%)';
+      this.app.canvas.style.backgroundColor = '#000000';
+    } else {
+      // 拉伸模式
+      this.app.canvas.style.width = `${baseWidth}px`;
+      this.app.canvas.style.height = `${baseHeight}px`;
+      this.app.canvas.style.position = '';
+      this.app.canvas.style.transform = '';
+      this.app.canvas.style.backgroundColor = '';
+    }
+    
+    this.updateBgFill();
+  }
+
+
+  /**
+   * 应用FPS限制到PIXI ticker
+   * 这会控制效果更新的频率
+   */
+  private applyFpsLimit(): void {
+    if (!this.app.ticker) return;
+    
+    if (this._targetFps === 'auto') {
+      this.app.ticker.maxFPS = 0;  // 0 = 无限制
+      return;
+    }
+    
+    const fps = Math.max(10, Math.min(this._targetFps, 240));
+    this.app.ticker.maxFPS = fps;
+  }
+
+  /**
+   * 获取当前应该用于录制的FPS
+   * 如果用户设置了自定义FPS则使用，否则使用浏览器当前FPS
+   */
+  getRecordingFps(): number {
+    if (this._targetFps !== 'auto') {
+      return this._targetFps as number;
+    }
+    // 自动模式：使用PIXI实际FPS，但限制在合理范围
+    return Math.min(Math.max(this._pixiFps, 30), 60);
   }
 
   // ========== 公共 API ==========
@@ -557,6 +821,9 @@ export class PVEngine {
         screenHeight: this.app.screen.height,
         resolution: this._currentResolution,
         canvasColor: this._bgColorOverride,
+        targetResolution: this._targetResolution,
+        targetFps: this._targetFps,
+        scaleMode: this._scaleMode,
       },
       motion: {
         enabled: this._motionDetectionEnabled,
@@ -654,10 +921,30 @@ export class PVEngine {
       this.canvasColor = config.render.canvasColor;
     }
 
+    if (config.render?.targetResolution !== undefined) {
+      this.targetResolution = config.render.targetResolution;
+    }
+    if (config.render?.targetFps !== undefined) {
+      this.targetFps = config.render.targetFps;
+    }
+
+    if (config.render?.scaleMode !== undefined) {
+      this.scaleMode = config.render.scaleMode;
+    }
+
     this.external.applyConfig(config);
   }
 
   destroy() {
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
+    }
+    if (this._rafId !== null) {
+      cancelAnimationFrame(this._rafId);
+      this._rafId = null;
+    }
+    this._fpsMonitorStarted = false;
     this.external.destroy();
     this.media.destroy();
     this.lyrics.destroy();
@@ -693,6 +980,9 @@ export class PVEngine {
   }
 
   private syncResolution(): void {
+    if (this._targetResolution !== 'auto') {
+      return;
+    }
     const n = this.activeEffects.length;
     const dpr = this._nativeDPR;
     const mobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;

@@ -27,6 +27,8 @@ import type { LocaleKey } from './zh';
 export const ja: Record<LocaleKey, string> = {
   // Page
   'page_title': 'PV Tool AGPL Community Edition - PVビジュアルジェネレーター',
+  'initializing': 'PV Tool AGPL Community Edition を初期化中...',
+  'initializing_desc': 'しばらくお待ちください。初回読み込み時にモニターのリフレッシュレートを検出します',
 
   // Panel titles
   'postfx': 'ポスト Post FX',
@@ -74,6 +76,28 @@ export const ja: Record<LocaleKey, string> = {
   'srt_import': '字幕タイムライン SRT',
   'lrc_import': 'LRC読込',
   'timer_label': 'タイマー Time',
+
+  'render': 'レンダリング設定',
+  'render_resolution': '解像度',
+  'render_resolution_auto': '自動 (パフォーマンス優先)',
+  'render_resolution_1x': '1x (標準)',
+  'render_resolution_1_5x': '1.5x (高)',
+  'render_resolution_2x': '2x (超高)',
+  'render_resolution_custom': 'カスタム WxH',
+  'render_resolution_width': '幅',
+  'render_resolution_height': '高さ',
+  'render_resolution_apply': '適用',
+  'render_fps': 'フレームレート制限',
+  'render_fps_auto': '自動 (最大)',
+  'render_fps_30': '30 FPS',
+  'render_fps_60': '60 FPS',
+  'render_fps_custom': 'カスタム',
+  'render_fps_value': 'FPS',
+  'render_fps_current': '現在のFPS: {fps}',
+  'fps_warning_exceed_monitor': '設定されたFPS({fps})がモニターのリフレッシュレート({max})を超えています',
+  'render_scale_mode': '画面スケールモード',
+  'scale_mode_stretch': '引き伸ばし (フルスクリーン)',
+  'scale_mode_contain': 'アスペクト比維持 (黒帯)',
 
   // Right panel — Export
   'export': '書き出し Export',

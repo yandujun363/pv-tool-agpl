@@ -25,6 +25,8 @@
 export const zh = {
   // Page
   'page_title': 'PV Tool AGPL Community Edition - 日式PV Visual生成',
+  'initializing': '正在初始化 PV Tool AGPL Community Edition...',
+  'initializing_desc': '请稍候，首次加载需要检测显示器刷新率',
 
   // Panel titles
   'postfx': '後期 Post FX',
@@ -73,6 +75,29 @@ export const zh = {
   'lrc_import': '导入 LRC',
   'timer_label': '计时 Time',
 
+
+  'render': '渲染设置',
+  'render_resolution': '渲染分辨率',
+  'render_resolution_auto': '自动 (根据性能)',
+  'render_resolution_1x': '1x (标准)',
+  'render_resolution_1_5x': '1.5x (高)',
+  'render_resolution_2x': '2x (超高)',
+  'render_resolution_custom': '自定义宽x高',
+  'render_resolution_width': '宽度',
+  'render_resolution_height': '高度',
+  'render_resolution_apply': '应用',
+  'render_fps': '帧率限制',
+  'render_fps_auto': '自动 (最高)',
+  'render_fps_30': '30 FPS',
+  'render_fps_60': '60 FPS',
+  'render_fps_custom': '自定义',
+  'render_fps_value': 'FPS',
+  'render_fps_current': '当前帧率: {fps}',
+  'fps_warning_exceed_monitor': '设置的FPS({fps})超过显示器刷新率({max})，可能导致画面撕裂',
+  'render_scale_mode': '画面缩放模式',
+  'scale_mode_stretch': '拉伸填满 (全屏)',
+  'scale_mode_contain': '保持比例 (黑边)',
+  
   // Right panel — Export
   'export': '导出 Export',
   'copy_url': '复制 URL',

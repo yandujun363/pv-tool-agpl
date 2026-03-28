@@ -37,6 +37,7 @@ import { exposeGlobalConfigAPI } from '../config';
 import { syncUIFromConfig } from '../config/sync';
 import { initCopyUrlButton } from '../core/copyUrl';
 import { loadCustomTemplates } from '../core/templateStore';
+import { initRenderPanel } from './renderPanel';
 
 let customTemplates = loadCustomTemplates();
 
@@ -59,6 +60,9 @@ export async function initUI(engine: PVEngine): Promise<void> {
   });
   initNowPlaying(engine, ui);
   initWesingCap(engine, ui);
+  initRenderPanel(engine, ui);
+
+  await initRenderPanel(engine, ui);
 
   // Copy URL button
   if (ui.copyUrlBtn && ui.npListenToggle) {

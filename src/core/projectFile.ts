@@ -359,6 +359,7 @@ function convertLegacyConfig(old: any): UnifiedConfig {
       screenHeight: 0,
       resolution: 1,
       canvasColor: old.canvasColor || null,
+      scaleMode: old.scaleMode || 'contain',
     },
     motion: {
       enabled: false,
