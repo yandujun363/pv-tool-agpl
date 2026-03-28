@@ -34,9 +34,10 @@ import {
   encodeShareCodeJSON,
   decodeShareCodeSmart
 } from '../core/templateStore';
-import { showToast } from '../core/uiHelpers';
 import { tplName } from './utils';
 import type { UIElements } from './elements';
+import { showConfirm } from '../composables/useConfirm';
+import { showToast } from '../composables/useToast';
 
 let customTemplates: TemplateConfig[] = [];
 
@@ -171,8 +172,23 @@ function setupTemplateEvents(
     const val = ui.templateSelect.value;
     if (!val.startsWith('user-')) return;
     const idx = parseInt(val.split('-')[1]);
-    ui.tplDeleteText.textContent = `${t('confirm_delete')} "${customTemplates[idx].name}"？`;
-    ui.tplDeleteConfirm.style.display = '';
+    
+    showConfirm({
+      title: t('confirm_delete'),
+      message: `${t('confirm_delete')} "${customTemplates[idx].name}"？`,
+      confirmText: t('delete_tpl'),
+      cancelText: t('cancel')
+    }).then((confirmed) => {
+      if (confirmed) {
+        customTemplates.splice(idx, 1);
+        saveCustomTemplates(customTemplates);
+        rebuildTemplateSelect(ui);
+        ui.templateSelect.value = '0';
+        engine.loadTemplate(templates[0]);
+        updateTemplateButtons(ui);
+        onTemplateChanged();
+      }
+    });
   });
 
   ui.tplDeleteCancel.addEventListener('click', () => {

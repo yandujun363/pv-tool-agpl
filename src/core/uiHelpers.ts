@@ -22,30 +22,7 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-export function showToast(msg: string) {
-  const el = document.createElement('div');
-  el.className = 'pv-toast';
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 2200);
-}
+import { showToast } from '../composables/useToast';
 
-/**
- * Attach dismiss behaviour (click-outside + Escape) to a modal overlay.
- * Listeners are automatically cleaned up when the overlay is removed.
- */
-export function attachModalDismiss(overlay: HTMLElement): void {
-  const onEsc = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      document.removeEventListener('keydown', onEsc);
-      overlay.remove();
-    }
-  };
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      document.removeEventListener('keydown', onEsc);
-      overlay.remove();
-    }
-  });
-  document.addEventListener('keydown', onEsc);
-}
+// 重新导出 showToast 保持兼容性
+export { showToast };

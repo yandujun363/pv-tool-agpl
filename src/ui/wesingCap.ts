@@ -25,11 +25,9 @@
 import type { PVEngine } from '../core/engine';
 import { testWesingCapConnection } from '../core/wesingCapProvider';
 import { t } from '../i18n';
-import { showToast, attachModalDismiss } from '../core/uiHelpers';
-import { showModal } from './utils';
+import { showToast } from '../composables/useToast';
+import { showConfirm } from '../composables/useConfirm';
 import type { UIElements } from './elements';
-
-let nwcConnecting = false;
 
 export function initWesingCap(engine: PVEngine, ui: UIElements): void {
   const nwcListenToggle = ui.nwcListenToggle;
@@ -39,82 +37,62 @@ export function initWesingCap(engine: PVEngine, ui: UIElements): void {
   engine.onWesingCapDisconnect = () => {
     if (nwcListenToggle) nwcListenToggle.checked = false;
     engine.wesingCapListening = false;
-    const nwcLink = 'https://vtb.link/wesingcap';
-    showModal(
-      `<p class="pv-modal-title">${t('nwc_fail_title')}</p>
-       <p>${t('nwc_fail_body')}</p>
-       <p><a href="${nwcLink}" target="_blank" rel="noopener">${nwcLink}</a></p>`,
-      t('modal_confirm'),
-    );
+    showConfirm({
+      title: t('nwc_fail_title'),
+      message: t('nwc_fail_body') + '\n\nhttps://vtb.link/wesingcap',
+      confirmText: t('modal_confirm')
+    });
   };
 
-  // Gear settings popup
+  // Gear settings popup - 使用 Vue 组件
   const nwcGearBtn = ui.nwcGearBtn;
-  nwcGearBtn?.addEventListener('click', (e) => {
+  nwcGearBtn?.addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
-
-    const overlay = document.createElement('div');
-    overlay.className = 'pv-modal-overlay';
 
     const currentAddr = engine.wesingCapWsUrl
       ? engine.wesingCapWsUrl.replace(/^ws:\/\//, '').replace(/\/ws\/?$/, '')
       : '';
 
-    overlay.innerHTML = `
-      <div class="pv-modal-box nwc-settings-box">
-        <div class="pv-modal-body">
-          <p class="pv-modal-title">${t('nwc_settings_title')}</p>
-          <label class="nwc-addr-label">${t('nwc_ws_addr')}</label>
-          <input type="text" class="nwc-addr-input" id="nwc-addr-input"
-                 value="${currentAddr}" placeholder="${t('nwc_ws_addr_placeholder')}">
-        </div>
-        <div class="pv-modal-footer nwc-settings-footer">
-          <button class="btn pv-modal-confirm">${t('nwc_save')}</button>
-        </div>
-        <div class="nwc-settings-branding">
-          <a href="https://vtb.link/wesingcap" target="_blank" rel="noopener">VTB-TOOLS Metabox Nexus WesingCap</a>
-          <span class="nwc-powered-by">Powered by <a href="https://space.bilibili.com/40879764" target="_blank" rel="noopener">VTB-LIVE &amp; VTB-LINK</a></span>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    const addrInput = overlay.querySelector('#nwc-addr-input') as HTMLInputElement;
-    const confirmBtn = overlay.querySelector('.pv-modal-confirm')!;
-    confirmBtn.addEventListener('click', () => {
-      const val = addrInput.value.trim();
-      if (val) {
-        engine.wesingCapWsUrl = 'ws://' + val + '/ws';
-      } else {
-        engine.wesingCapWsUrl = undefined;
+    // 动态导入 WesingCapSettings 组件
+    const { default: WesingCapSettings } = await import('../components/WesingCapSettings.vue');
+    const { createApp } = await import('vue');
+    
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    
+    const app = createApp(WesingCapSettings, {
+      onSave: (addr: string) => {
+        if (addr) {
+          engine.wesingCapWsUrl = 'ws://' + addr + '/ws';
+        } else {
+          engine.wesingCapWsUrl = undefined;
+        }
+        showToast(t('nwc_saved'));
+        app.unmount();
+        container.remove();
       }
-      overlay.remove();
-      showToast(t('nwc_saved'));
     });
-    attachModalDismiss(overlay);
+    
+    const instance = app.mount(container);
+    // 打开模态框
+    if ((instance as any).open) {
+      (instance as any).open(currentAddr);
+    }
   });
 
   // Toggle listener
   nwcListenToggle.addEventListener('change', async () => {
     if (nwcListenToggle.checked) {
-      if (nwcConnecting) {
-        nwcListenToggle.checked = false;
-        return;
-      }
-      nwcConnecting = true;
       const ok = await testWesingCapConnection(engine.wesingCapWsUrl);
-      nwcConnecting = false;
 
       if (!ok) {
         nwcListenToggle.checked = false;
-        const nwcLink = 'https://vtb.link/wesingcap';
-        showModal(
-          `<p class="pv-modal-title">${t('nwc_fail_title')}</p>
-           <p>${t('nwc_fail_body')}</p>
-           <p><a href="${nwcLink}" target="_blank" rel="noopener">${nwcLink}</a></p>`,
-          t('modal_confirm'),
-        );
+        showConfirm({
+          title: t('nwc_fail_title'),
+          message: t('nwc_fail_body') + '\n\nhttps://vtb.link/wesingcap',
+          confirmText: t('modal_confirm')
+        });
         return;
       }
     }

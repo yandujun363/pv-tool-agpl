@@ -23,7 +23,7 @@
  */
 
 import { t } from '../i18n';
-import { showToast, attachModalDismiss } from './uiHelpers';
+import { showToast } from '../composables/useToast';
 
 export function initCopyUrlButton(
   copyUrlBtn: HTMLButtonElement,
@@ -32,52 +32,29 @@ export function initCopyUrlButton(
   nwcListenToggle?: HTMLInputElement | null,
   getWesingCapAddr?: () => string | undefined,
 ): void {
-  copyUrlBtn.addEventListener('click', () => {
-    const overlay = document.createElement('div');
-    overlay.className = 'pv-modal-overlay';
-    overlay.innerHTML = `
-      <div class="pv-modal-box">
-        <div class="pv-modal-body">
-          <p class="pv-modal-title">${t('copy_url_settings')}</p>
-          <label class="effect-toggle" style="margin-bottom:8px">
-            <input type="checkbox" id="copy-url-bg-check" checked>
-            <span>${t('copy_url_transparent_bg')}</span>
-          </label>
-          <label class="effect-toggle" style="margin-bottom:8px">
-            <input type="checkbox" id="copy-url-tpl-check" checked>
-            <span>${t('copy_url_use_template')}</span>
-          </label>
-        </div>
-        <div class="pv-modal-footer">
-          <button class="btn pv-modal-confirm">${t('copy_url_copy_btn')}</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    const confirmBtn = overlay.querySelector('.pv-modal-confirm')!;
-    confirmBtn.addEventListener('click', async () => {
-      const bgCheck = overlay.querySelector('#copy-url-bg-check') as HTMLInputElement;
-      const tplCheck = overlay.querySelector('#copy-url-tpl-check') as HTMLInputElement;
-
-      const baseUrl = window.location.origin + window.location.pathname;
-      const params = new URLSearchParams();
-      params.set('panel', '0');
-      if (bgCheck.checked) params.set('bg', '0');
-      if (tplCheck.checked) params.set('t', templateSelect.value);
-      if (npListenToggle.checked) params.set('np', '1');
-      if (nwcListenToggle?.checked) {
-        params.set('metabox-nexus-wesingcap', '1');
-        const nwcAddr = getWesingCapAddr?.()?.trim();
-        if (nwcAddr) params.set('metabox-nexus-wesingcap-addr', nwcAddr);
+  copyUrlBtn.addEventListener('click', async () => {
+    const { default: CopyUrlSettings } = await import('../components/CopyUrlSettings.vue');
+    const { createApp } = await import('vue');
+    
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    
+    const app = createApp(CopyUrlSettings, {
+      templateValue: templateSelect.value,
+      npEnabled: npListenToggle.checked,
+      nwcEnabled: nwcListenToggle?.checked ?? false,
+      nwcAddress: getWesingCapAddr?.() ?? '',
+      onCopy: (url: string) => {
+        navigator.clipboard.writeText(url).catch(() => {});
+        showToast(t('url_copied'));
+        app.unmount();
+        container.remove();
       }
-      const url = baseUrl + '?' + params.toString();
-
-      try { await navigator.clipboard.writeText(url); } catch { /* noop */ }
-      overlay.remove();
-      showToast(t('url_copied'));
     });
-
-    attachModalDismiss(overlay);
+    
+    const instance = app.mount(container);
+    if ((instance as any).open) {
+      (instance as any).open();
+    }
   });
 }
