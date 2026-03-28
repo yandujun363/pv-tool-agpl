@@ -1,0 +1,15 @@
+/* src/styles/file-pick.css */
+.file-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-pick-name {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}

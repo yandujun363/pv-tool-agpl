@@ -1,0 +1,57 @@
+/* src/styles/effects.css */
+.effect-category {
+  margin-bottom: 4px;
+}
+
+.effect-category-title {
+  font-size: 0.68rem;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  padding: 3px 0;
+  list-style: none;
+  user-select: none;
+  letter-spacing: 0.5px;
+}
+
+.effect-category-title::before {
+  content: '▸ ';
+  display: inline-block;
+  transition: transform 0.15s;
+}
+
+.effect-category[open] > .effect-category-title::before {
+  content: '▾ ';
+}
+
+.effect-category-title:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.effect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 4px 12px;
+}
+
+.effect-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 3px 0;
+  transition: color 0.15s;
+}
+
+.effect-toggle:hover {
+  color: #fff;
+}
+
+.effect-toggle input[type="checkbox"] {
+  accent-color: #6688cc;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+}

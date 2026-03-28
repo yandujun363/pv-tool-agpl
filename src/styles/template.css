@@ -1,0 +1,43 @@
+/* src/styles/template.css */
+.template-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.tpl-inline-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.tpl-inline-input input[type="text"] {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.tpl-confirm-text {
+  font-size: 0.72rem;
+  color: rgba(255, 180, 180, 0.9);
+  flex: 1;
+}
+
+#share-code-text {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.75rem;
+  font-family: 'Courier New', monospace;
+  resize: vertical;
+  outline: none;
+}
+
+.label-error {
+  color: rgba(255, 120, 120, 0.9) !important;
+}
