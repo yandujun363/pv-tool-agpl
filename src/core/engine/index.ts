@@ -88,6 +88,7 @@ export class PVEngine {
   private _lastPixiFpsUpdate = 0;
   private _pixiFrameCount = 0;
 
+  private _userCustomSize = false;
 
   private _resizeObserver: ResizeObserver | null = null;
 
@@ -303,6 +304,7 @@ export class PVEngine {
 
   set targetResolution(resolution: typeof this._targetResolution) {
     this._targetResolution = resolution;
+    this._userCustomSize = resolution !== 'auto' && typeof resolution === 'object';
     this.applyResolution();
   }
 
@@ -344,10 +346,11 @@ export class PVEngine {
         targetWidth = baseWidth;
         targetHeight = baseHeight;
       } else if (typeof this._targetResolution === 'object') {
-        // 自定义宽高模式（未锁定）
+        // 自定义宽高模式
         targetWidth = this._targetResolution.width;
         targetHeight = this._targetResolution.height;
         resolution = 1;
+        this._userCustomSize = true;
       } else {
         targetWidth = baseWidth;
         targetHeight = baseHeight;
@@ -981,6 +984,9 @@ export class PVEngine {
   }
 
   private syncResolution(): void {
+    if (this._targetResolution !== 'auto') {
+      return;
+    }
     const n = this.activeEffects.length;
     const dpr = this._nativeDPR;
     const mobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
