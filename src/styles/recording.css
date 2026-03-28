@@ -22,7 +22,41 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { showToast } from '../composables/useToast';
+.rec-group {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
 
-// 重新导出 showToast 保持兼容性
-export { showToast };
+.rec-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+}
+
+.rec-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff3333;
+  display: inline-block;
+  transition: all 0.2s;
+}
+
+.rec-btn.recording .rec-icon {
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.rec-btn.recording {
+  border-color: #ff3333;
+  background: rgba(255, 50, 50, 0.25);
+}
+
+.rec-timer {
+  font-size: 0.72rem;
+  font-family: 'Courier New', monospace;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 40px;
+}

@@ -22,7 +22,36 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { showToast } from '../composables/useToast';
+.resolution-controls,
+.fps-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-// 重新导出 showToast 保持兼容性
-export { showToast };
+.custom-resolution,
+.custom-fps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.custom-resolution input,
+.custom-fps input {
+  width: 80px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+}
+
+.resolution-sep {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+}
+
+#fps-current {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: 8px;
+  font-weight: normal;
+}

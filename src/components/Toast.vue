@@ -23,45 +23,29 @@
 -->
 
 <template>
-  <div class="panels-wrapper" id="panels-wrapper">
-    <ControlPanel />
-    <RightPanel />
-    <BottomPanel />
-  </div>
-
-  <MobileToggle />
-
-  <div id="pv-container"></div>
-
-  <InitOverlay />
-
-  <GlobalFooter />
+    <div v-if="visible" class="pv-toast">
+        {{ message }}
+    </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted } from "vue";
-import ControlPanel from "./components/ControlPanel.vue";
-import RightPanel from "./components/RightPanel.vue";
-import BottomPanel from "./components/BottomPanel.vue";
-import MobileToggle from "./components/MobileToggle.vue";
-import InitOverlay from "./components/InitOverlay.vue";
-import GlobalFooter from "./components/GlobalFooter.vue";
-import { initApp } from "./app";
+<script lang="ts" setup>
+import { ref, onMounted } from 'vue';
 
-export default defineComponent({
-  name: "App",
-  components: {
-    ControlPanel,
-    RightPanel,
-    BottomPanel,
-    MobileToggle,
-    InitOverlay,
-    GlobalFooter,
-  },
-  setup() {
-    onMounted(() => {
-      initApp();
-    });
-  },
+const props = defineProps<{
+    message: string;
+    duration?: number;
+}>();
+
+const emit = defineEmits<{
+    close: [];
+}>();
+
+const visible = ref(true);
+
+onMounted(() => {
+    setTimeout(() => {
+        visible.value = false;
+        setTimeout(() => emit('close'), 300);
+    }, props.duration || 2200);
 });
 </script>

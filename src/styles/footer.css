@@ -22,7 +22,32 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { showToast } from '../composables/useToast';
+.global-footer {
+  position: fixed;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  background: transparent;
+  pointer-events: none;
+  z-index: 1000;
+  font-family: monospace;
+}
 
-// 重新导出 showToast 保持兼容性
-export { showToast };
+.global-footer a {
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  pointer-events: auto;
+  margin-left: 12px;
+}
+
+.global-footer a:hover {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: underline;
+}
+
+.global-footer .footer-links {
+  margin-left: 8px;
+}

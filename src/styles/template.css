@@ -1,0 +1,92 @@
+/*!
+ * SPDX-License-Identifier: AGPL-3.0-only
+ * 
+ * PV Tool — AGPL Community Edition
+ * Based on the last AGPL-3.0 version published on 2026-03-18
+ * 
+ * Copyright (c) 2026 DanteAlighieri13210914
+ * Copyright (c) 2026 Contributors to PV Tool AGPL Community Edition
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, version 3 of the License.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ * 
+ * Source repository: https://github.com/yandujun363/pv-tool-agpl
+ */
+
+.template-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.tpl-inline-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.tpl-inline-input input[type="text"] {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.tpl-confirm-text {
+  font-size: 0.72rem;
+  color: rgba(255, 180, 180, 0.9);
+  flex: 1;
+}
+
+#share-code-text {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.75rem;
+  font-family: 'Courier New', monospace;
+  resize: vertical;
+  outline: none;
+}
+
+#share-code-text:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.label-error {
+  color: rgba(255, 120, 120, 0.9) !important;
+}
+
+/* share code group */
+#share-code-group {
+  margin-top: 8px;
+}
+
+#share-code-group label {
+  margin-bottom: 4px;
+}
+
+/* 项目导出对话框 */
+.pv-project-export-dialog {
+  max-width: 300px;
+}
+
+.pv-project-export-dialog .effect-toggle {
+  margin: 8px 0;
+}
+
+.pv-project-export-dialog .effect-toggle input {
+  margin-right: 8px;
+}

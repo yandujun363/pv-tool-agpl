@@ -22,38 +22,46 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { t } from '../i18n';
-import { showToast } from '../composables/useToast';
+import { createApp } from 'vue';
+import GlobalModal from '../components/GlobalModal.vue';
 
-export function initCopyUrlButton(
-  copyUrlBtn: HTMLButtonElement,
-  templateSelect: HTMLSelectElement,
-  npListenToggle: HTMLInputElement,
-  nwcListenToggle?: HTMLInputElement | null,
-  getWesingCapAddr?: () => string | undefined,
-): void {
-  copyUrlBtn.addEventListener('click', async () => {
-    const { default: CopyUrlSettings } = await import('../components/CopyUrlSettings.vue');
-    const { createApp } = await import('vue');
-    
+export function showConfirm(options: {
+  title?: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+}): Promise<boolean> {
+  return new Promise((resolve) => {
     const container = document.createElement('div');
     document.body.appendChild(container);
     
-    const app = createApp(CopyUrlSettings, {
-      templateValue: templateSelect.value,
-      npEnabled: npListenToggle.checked,
-      nwcEnabled: nwcListenToggle?.checked ?? false,
-      nwcAddress: getWesingCapAddr?.() ?? '',
-      onCopy: (url: string) => {
-        navigator.clipboard.writeText(url).catch(() => {});
-        showToast(t('url_copied'));
+    const app = createApp(GlobalModal, {
+      title: options.title || '',
+      message: options.message,
+      confirmText: options.confirmText || '确定',
+      cancelText: options.cancelText || '取消',
+      showCancel: true,
+      onConfirm: () => {
         app.unmount();
         container.remove();
+        resolve(true);
+      },
+      onCancel: () => {
+        app.unmount();
+        container.remove();
+        resolve(false);
+      },
+      onClose: () => {
+        app.unmount();
+        container.remove();
+        resolve(false);
       }
     });
     
     const instance = app.mount(container);
-    if ((instance as any).open) {
+    
+    // 自动打开模态框
+    if (instance && (instance as any).open) {
       (instance as any).open();
     }
   });

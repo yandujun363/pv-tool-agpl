@@ -25,7 +25,7 @@
 import type { PVEngine } from '../core/engine';
 import { testNowPlayingConnection } from '../core/nowPlayingProvider';
 import { t } from '../i18n';
-import { showModal } from './utils';
+import { showConfirm } from '../composables/useConfirm';
 import type { UIElements } from './elements';
 
 let npConnecting = false;
@@ -47,12 +47,11 @@ export function initNowPlaying(engine: PVEngine, ui: UIElements): void {
       if (!ok) {
         npListenToggle.checked = false;
         const npFailLink = 'https://github.com/Widdit/now-playing-service';
-        showModal(
-          `<p class="pv-modal-title">${t('np_fail_title')}</p>
-           <p>${t('np_fail_body')}</p>
-           <p><a href="${npFailLink}" target="_blank" rel="noopener">${npFailLink}</a></p>`,
-          t('modal_confirm'),
-        );
+        showConfirm({
+          title: t('np_fail_title'),
+          message: `${t('np_fail_body')}\n\n${npFailLink}`,
+          confirmText: t('modal_confirm')
+        });
         return;
       }
     }

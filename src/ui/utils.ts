@@ -22,27 +22,8 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { attachModalDismiss } from '../core/uiHelpers';
 import { t } from '../i18n';
 import type { TemplateConfig } from '../core/types';
-
-export function showModal(contentHtml: string, confirmText: string): void {
-  const overlay = document.createElement('div');
-  overlay.className = 'pv-modal-overlay';
-  overlay.innerHTML = `
-    <div class="pv-modal-box">
-      <div class="pv-modal-body">${contentHtml}</div>
-      <div class="pv-modal-footer">
-        <button class="btn pv-modal-confirm">${confirmText}</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-
-  overlay.querySelector('.pv-modal-confirm')!
-    .addEventListener('click', () => overlay.remove());
-  attachModalDismiss(overlay);
-}
 
 export function tplName(tpl: TemplateConfig): string {
   if (tpl.nameKey) {

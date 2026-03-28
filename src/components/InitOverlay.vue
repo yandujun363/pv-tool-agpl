@@ -23,45 +23,25 @@
 -->
 
 <template>
-  <div class="panels-wrapper" id="panels-wrapper">
-    <ControlPanel />
-    <RightPanel />
-    <BottomPanel />
-  </div>
-
-  <MobileToggle />
-
-  <div id="pv-container"></div>
-
-  <InitOverlay />
-
-  <GlobalFooter />
+    <div id="init-overlay" class="init-overlay" style="display: flex">
+        <div class="init-card">
+            <div class="init-spinner"></div>
+            <div class="init-text">
+                <div class="init-title">{{ t("initializing") }}</div>
+                <div class="init-desc">{{ t("initializing_desc") }}</div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from "vue";
-import ControlPanel from "./components/ControlPanel.vue";
-import RightPanel from "./components/RightPanel.vue";
-import BottomPanel from "./components/BottomPanel.vue";
-import MobileToggle from "./components/MobileToggle.vue";
-import InitOverlay from "./components/InitOverlay.vue";
-import GlobalFooter from "./components/GlobalFooter.vue";
-import { initApp } from "./app";
+import { defineComponent } from "vue";
+import { t } from "../i18n";
 
 export default defineComponent({
-  name: "App",
-  components: {
-    ControlPanel,
-    RightPanel,
-    BottomPanel,
-    MobileToggle,
-    InitOverlay,
-    GlobalFooter,
-  },
-  setup() {
-    onMounted(() => {
-      initApp();
-    });
-  },
+    name: "InitOverlay",
+    setup() {
+        return { t };
+    },
 });
 </script>

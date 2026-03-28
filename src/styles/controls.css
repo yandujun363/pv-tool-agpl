@@ -1,0 +1,163 @@
+/*!
+ * SPDX-License-Identifier: AGPL-3.0-only
+ * 
+ * PV Tool — AGPL Community Edition
+ * Based on the last AGPL-3.0 version published on 2026-03-18
+ * 
+ * Copyright (c) 2026 DanteAlighieri13210914
+ * Copyright (c) 2026 Contributors to PV Tool AGPL Community Edition
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, version 3 of the License.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ * 
+ * Source repository: https://github.com/yandujun363/pv-tool-agpl
+ */
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-group label {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+select, input[type='text'], textarea {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+select:focus,
+input[type='text']:focus,
+textarea:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+select option {
+  background: #222;
+  color: #fff;
+}
+
+textarea {
+  resize: none;
+  min-height: 30px;
+  line-height: 1.4;
+  overflow: hidden;
+  transition: height 0.2s ease;
+}
+
+textarea.text-expanded {
+  overflow-y: auto;
+}
+
+input[type='range'] {
+  width: 100%;
+  accent-color: #6688cc;
+  cursor: pointer;
+}
+
+.btn {
+  margin-top: 4px;
+  padding: 5px 12px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.btn-sm {
+  margin-top: 0;
+  padding: 3px 8px;
+  font-size: 0.7rem;
+}
+
+.btn-danger {
+  border-color: rgba(255, 80, 80, 0.5);
+  background: rgba(255, 50, 50, 0.25);
+}
+
+.btn-danger:hover {
+  background: rgba(255, 50, 50, 0.4);
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.slider-row .slider-label {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  min-width: 34px;
+}
+
+.slider-row input[type='range'] {
+  flex: 1;
+  min-width: 0;
+}
+
+.slider-row span:last-child {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 28px;
+  text-align: right;
+}
+
+/* 复制 URL 行 */
+.copy-url-row {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 4px !important;
+}
+
+.copy-url-btn {
+  flex: 1;
+}
+
+/* 标签带操作按钮 */
+.label-with-action {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.btn-label {
+  padding: 2px 8px;
+  font-size: 0.65rem;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}

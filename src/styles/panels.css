@@ -1,0 +1,186 @@
+/*!
+ * SPDX-License-Identifier: AGPL-3.0-only
+ * 
+ * PV Tool — AGPL Community Edition
+ * Based on the last AGPL-3.0 version published on 2026-03-18
+ * 
+ * Copyright (c) 2026 DanteAlighieri13210914
+ * Copyright (c) 2026 Contributors to PV Tool AGPL Community Edition
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, version 3 of the License.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ * 
+ * Source repository: https://github.com/yandujun363/pv-tool-agpl
+ */
+
+.controls {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 16px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  backdrop-filter: blur(10px);
+  min-width: 220px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+}
+
+.controls-right {
+  left: auto;
+  right: 16px;
+}
+
+.controls-bottom {
+  left: 50%;
+  transform: translateX(-50%);
+  top: auto;
+  bottom: 16px;
+  min-width: 700px;
+  max-width: 90vw;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.panels-wrapper {
+  display: contents;
+}
+
+.mobile-toggle {
+  display: none;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  #pv-container {
+    touch-action: none;
+  }
+  
+  .mobile-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 200;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .panels-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    max-height: 55vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transition: transform 0.25s ease;
+  }
+  
+  .panels-wrapper.panels-hidden {
+    transform: translateY(100%);
+    pointer-events: none;
+  }
+  
+  .controls,
+  .controls-right {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    border-radius: 0;
+    min-width: unset;
+    width: 100%;
+    max-height: none;
+    overflow-y: visible;
+    padding: 14px 16px;
+    gap: 10px;
+  }
+  
+  .panels-wrapper > .controls:first-child {
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .controls-bottom {
+    position: relative;
+    top: auto;
+    left: auto;
+    bottom: auto;
+    transform: none;
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+    border-radius: 0;
+    max-height: none;
+    overflow-y: visible;
+  }
+  
+  /* 更大触摸目标 */
+  .btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    min-height: 36px;
+  }
+  
+  input[type='range'] {
+    height: 32px;
+  }
+  
+  .effect-toggle {
+    padding: 6px 0;
+    font-size: 0.78rem;
+  }
+  
+  .effect-toggle input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .effect-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 4px 10px;
+  }
+  
+  select,
+  input[type='text'],
+  textarea {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+}
+
+body.pv-panels-hidden .panels-wrapper,
+body.pv-panels-hidden .mobile-toggle {
+  display: none;
+}

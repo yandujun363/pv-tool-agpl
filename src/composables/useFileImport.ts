@@ -22,7 +22,25 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { showToast } from '../composables/useToast';
+import { ref } from "vue";
 
-// 重新导出 showToast 保持兼容性
-export { showToast };
+export function useFileImport() {
+  const inputRef = ref<HTMLInputElement>();
+  const file = ref<File | null>(null);
+
+  const trigger = () => {
+    inputRef.value?.click();
+  };
+
+  const handleChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    file.value = target.files?.[0] || null;
+  };
+
+  return {
+    inputRef,
+    file,
+    trigger,
+    handleChange,
+  };
+}

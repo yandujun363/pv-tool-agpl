@@ -22,7 +22,28 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { showToast } from '../composables/useToast';
+import { createApp } from 'vue';
+import Toast from '../components/Toast.vue';
 
-// 重新导出 showToast 保持兼容性
-export { showToast };
+let toastInstance: any = null;
+
+export function showToast(message: string, duration?: number) {
+  if (toastInstance) {
+    toastInstance.close?.();
+  }
+  
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  
+  const app = createApp(Toast, {
+    message,
+    duration,
+    onClose: () => {
+      app.unmount();
+      container.remove();
+      toastInstance = null;
+    }
+  });
+  
+  toastInstance = app.mount(container);
+}

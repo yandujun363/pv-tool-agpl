@@ -22,7 +22,31 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { showToast } from '../composables/useToast';
+:root {
+  font-family: 'Noto Sans JP', 'Inter', system-ui, sans-serif;
+  line-height: 1.5;
+  --pv-build: 0914;
+  --pv-accent-hsl: 221 60% 48%;
+}
 
-// 重新导出 showToast 保持兼容性
-export { showToast };
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  background: #000;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+#pv-container {
+  width: 100%;
+  height: 100%;
+}

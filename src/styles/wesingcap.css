@@ -1,0 +1,101 @@
+/*!
+ * SPDX-License-Identifier: AGPL-3.0-only
+ * 
+ * PV Tool — AGPL Community Edition
+ * Based on the last AGPL-3.0 version published on 2026-03-18
+ * 
+ * Copyright (c) 2026 DanteAlighieri13210914
+ * Copyright (c) 2026 Contributors to PV Tool AGPL Community Edition
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, version 3 of the License.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/agpl-3.0.txt>.
+ * 
+ * Source repository: https://github.com/yandujun363/pv-tool-agpl
+ */
+
+.nwc-toggle-row {
+  position: relative;
+}
+
+.nwc-gear-btn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 2px;
+  margin-left: 4px;
+  line-height: 1;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.nwc-gear-btn:hover {
+  color: #fff;
+}
+
+.nwc-settings-box {
+  max-width: 340px;
+}
+
+.nwc-addr-label {
+  display: block;
+  font-size: 12px;
+  color: #bbb;
+  margin-bottom: 4px;
+  margin-top: 8px;
+}
+
+.nwc-addr-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  font-size: 13px;
+  background: #1e1e2e;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #eee;
+  outline: none;
+}
+
+.nwc-addr-input:focus {
+  border-color: #6688cc;
+}
+
+.nwc-settings-footer {
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.nwc-settings-branding {
+  padding: 10px 16px 14px;
+  font-size: 11px;
+  color: #888;
+  text-align: center;
+  line-height: 1.7;
+  border-top: 1px solid #333;
+}
+
+.nwc-settings-branding a {
+  color: #6ca0dc;
+  text-decoration: none;
+}
+
+.nwc-settings-branding a:hover {
+  text-decoration: underline;
+}
+
+.nwc-powered-by {
+  display: block;
+  margin-top: 2px;
+}

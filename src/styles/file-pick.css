@@ -22,7 +22,17 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { showToast } from '../composables/useToast';
+.file-pick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-// 重新导出 showToast 保持兼容性
-export { showToast };
+.file-pick-name {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}

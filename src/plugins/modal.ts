@@ -22,7 +22,12 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { showToast } from '../composables/useToast';
+import type { App } from 'vue';
+import GlobalModal from '../components/GlobalModal.vue';
 
-// 重新导出 showToast 保持兼容性
-export { showToast };
+export default {
+  install(app: App) {
+    // 注册全局组件
+    app.component('GlobalModal', GlobalModal);
+  }
+};

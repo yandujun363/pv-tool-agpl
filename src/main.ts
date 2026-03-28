@@ -23,7 +23,10 @@
  */
 
 import { createApp } from 'vue'
-import './style.css'
+import './styles/index.css'
 import App from './App.vue'
+import ModalPlugin from './plugins/modal';
 
-createApp(App).mount('#app')
+const app = createApp(App);
+app.use(ModalPlugin);
+app.mount('#app');

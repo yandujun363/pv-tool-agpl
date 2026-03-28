@@ -22,7 +22,20 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { showToast } from '../composables/useToast';
-
-// 重新导出 showToast 保持兼容性
-export { showToast };
+@import './variables.css';
+@import './panels.css';
+@import './collapsible.css';
+@import './controls.css';
+@import './file-pick.css';
+@import './color-swatches.css';
+@import './audio.css';
+@import './recording.css';
+@import './template.css';
+@import './effects.css';
+@import './render.css';
+@import './overlay.css';
+@import './footer.css';
+@import './license.css';
+@import './toast-modal.css';
+@import './help.css';
+@import './wesingcap.css';

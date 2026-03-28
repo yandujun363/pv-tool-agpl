@@ -23,45 +23,27 @@
 -->
 
 <template>
-  <div class="panels-wrapper" id="panels-wrapper">
-    <ControlPanel />
-    <RightPanel />
-    <BottomPanel />
-  </div>
-
-  <MobileToggle />
-
-  <div id="pv-container"></div>
-
-  <InitOverlay />
-
-  <GlobalFooter />
+    <footer class="global-footer">
+        <div class="footer-content">
+            <span>{{ t("license_copyright") }}</span>
+            <span class="footer-links">
+                <a href="https://github.com/yandujun363/pv-tool-agpl" target="_blank" rel="noopener noreferrer">{{
+                    t("license_source") }}</a>
+                <a href="https://www.gnu.org/licenses/agpl-3.0.txt" target="_blank"
+                    rel="noopener noreferrer">AGPL-3.0</a>
+            </span>
+        </div>
+    </footer>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from "vue";
-import ControlPanel from "./components/ControlPanel.vue";
-import RightPanel from "./components/RightPanel.vue";
-import BottomPanel from "./components/BottomPanel.vue";
-import MobileToggle from "./components/MobileToggle.vue";
-import InitOverlay from "./components/InitOverlay.vue";
-import GlobalFooter from "./components/GlobalFooter.vue";
-import { initApp } from "./app";
+import { defineComponent } from "vue";
+import { t } from "../i18n";
 
 export default defineComponent({
-  name: "App",
-  components: {
-    ControlPanel,
-    RightPanel,
-    BottomPanel,
-    MobileToggle,
-    InitOverlay,
-    GlobalFooter,
-  },
-  setup() {
-    onMounted(() => {
-      initApp();
-    });
-  },
+    name: "GlobalFooter",
+    setup() {
+        return { t };
+    },
 });
 </script>

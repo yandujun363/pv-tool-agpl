@@ -22,7 +22,42 @@
  * Source repository: https://github.com/yandujun363/pv-tool-agpl
  */
 
-import { showToast } from '../composables/useToast';
+.color-swatches {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
 
-// 重新导出 showToast 保持兼容性
-export { showToast };
+.swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.swatch:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.1);
+}
+
+.swatch-active {
+  border-color: #6688cc;
+  box-shadow: 0 0 6px rgba(102, 136, 204, 0.6);
+}
+
+.swatch-auto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.6rem;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(135deg, #333 50%, #888 50%);
+  border-radius: 3px;
+}
