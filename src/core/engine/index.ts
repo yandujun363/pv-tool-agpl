@@ -88,6 +88,9 @@ export class PVEngine {
   private _lastPixiFpsUpdate = 0;
   private _pixiFrameCount = 0;
 
+
+  private _resizeObserver: ResizeObserver | null = null;
+
   // 标记是否已启动监控
   private _fpsMonitorStarted = false;
 
@@ -113,10 +116,10 @@ export class PVEngine {
   private _nativeDPR = 1;
   private _currentResolution = 1;
   private _resizeParent: HTMLElement | null = null;
-  _loading = false; // 内部使用，供模块访问
+  private _loading = false; // 内部使用，供模块访问
   private _bgColorOverride: string | null = null;
   private _tick = 0;
-  _time = 0; // 内部使用，供模块访问
+  private _time = 0; // 内部使用，供模块访问
 
   constructor() {
     this.app = new PIXI.Application();
@@ -136,7 +139,7 @@ export class PVEngine {
     this._resizeParent = parent;
 
     await this.app.init({
-      resizeTo: parent,
+      resizeTo: undefined,
       backgroundColor: 0x000000,
       backgroundAlpha: 0,
       antialias: true,
@@ -145,6 +148,15 @@ export class PVEngine {
       preserveDrawingBuffer: true,
     });
     parent.appendChild(this.app.canvas);
+
+    this._resizeObserver = new ResizeObserver(() => {
+      this.applyResolution();
+    });
+    this._resizeObserver.observe(parent);
+
+    window.addEventListener('resize', () => {
+      this.applyResolution();
+    });
 
     // Media layer at the very bottom
     const mediaLayer = new PIXI.Container();
@@ -321,55 +333,59 @@ export class PVEngine {
     const baseHeight = parent.clientHeight;
     const baseAspect = baseWidth / baseHeight;
     
-    let targetWidth = baseWidth;
-    let targetHeight = baseHeight;
+    let targetWidth: number;
+    let targetHeight: number;
     let resolution = this._nativeDPR;
     
     if (this._targetResolution !== 'auto') {
       if (typeof this._targetResolution === 'number') {
+        // 倍率模式：画布尺寸跟随窗口，分辨率倍率固定
         resolution = this._targetResolution;
         targetWidth = baseWidth;
         targetHeight = baseHeight;
       } else if (typeof this._targetResolution === 'object') {
+        // 自定义宽高模式（未锁定）
         targetWidth = this._targetResolution.width;
         targetHeight = this._targetResolution.height;
         resolution = 1;
+      } else {
+        targetWidth = baseWidth;
+        targetHeight = baseHeight;
       }
+    } else {
+      // 自动模式
+      targetWidth = baseWidth;
+      targetHeight = baseHeight;
     }
     
     this._currentResolution = resolution;
     this.app.renderer.resolution = resolution;
-    
-    // 设置画布实际分辨率
     this.app.renderer.resize(targetWidth, targetHeight);
     
+    // 根据缩放模式设置 CSS 样式
     if (this._scaleMode === 'contain') {
-      // 保持比例模式：计算实际显示尺寸（不裁切，保留黑边）
+      // 保持比例模式
       const targetAspect = targetWidth / targetHeight;
       let displayWidth: number;
       let displayHeight: number;
       
       if (targetAspect > baseAspect) {
-        // 画布更宽 → 宽度填满容器，高度按比例缩小（上下黑边）
         displayWidth = baseWidth;
         displayHeight = baseWidth / targetAspect;
       } else {
-        // 画布更高或相等 → 高度填满容器，宽度按比例缩小（左右黑边）
         displayHeight = baseHeight;
         displayWidth = baseHeight * targetAspect;
       }
       
-      // CSS 尺寸设为实际显示尺寸，居中显示
       this.app.canvas.style.width = `${displayWidth}px`;
       this.app.canvas.style.height = `${displayHeight}px`;
       this.app.canvas.style.position = 'absolute';
       this.app.canvas.style.top = '50%';
       this.app.canvas.style.left = '50%';
       this.app.canvas.style.transform = 'translate(-50%, -50%)';
-      // 确保背景透明/黑色
       this.app.canvas.style.backgroundColor = '#000000';
     } else {
-      // 拉伸模式：填满容器
+      // 拉伸模式
       this.app.canvas.style.width = `${baseWidth}px`;
       this.app.canvas.style.height = `${baseHeight}px`;
       this.app.canvas.style.position = '';
@@ -379,6 +395,7 @@ export class PVEngine {
     
     this.updateBgFill();
   }
+
 
   /**
    * 应用FPS限制到PIXI ticker
@@ -920,6 +937,10 @@ export class PVEngine {
   }
 
   destroy() {
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
+    }
     if (this._rafId !== null) {
       cancelAnimationFrame(this._rafId);
       this._rafId = null;
