@@ -54,6 +54,7 @@
 }
 
 .pv-modal-footer {
+  display: grid;
   margin-top: 20px;
   text-align: right;
 }
