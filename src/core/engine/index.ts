@@ -88,8 +88,6 @@ export class PVEngine {
   private _lastPixiFpsUpdate = 0;
   private _pixiFrameCount = 0;
 
-  private _userCustomSize = false;
-
   private _resizeObserver: ResizeObserver | null = null;
 
   // 标记是否已启动监控
@@ -304,7 +302,6 @@ export class PVEngine {
 
   set targetResolution(resolution: typeof this._targetResolution) {
     this._targetResolution = resolution;
-    this._userCustomSize = resolution !== 'auto' && typeof resolution === 'object';
     this.applyResolution();
   }
 
@@ -350,7 +347,6 @@ export class PVEngine {
         targetWidth = this._targetResolution.width;
         targetHeight = this._targetResolution.height;
         resolution = 1;
-        this._userCustomSize = true;
       } else {
         targetWidth = baseWidth;
         targetHeight = baseHeight;
