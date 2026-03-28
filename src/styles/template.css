@@ -38,6 +38,32 @@
   outline: none;
 }
 
+#share-code-text:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
 .label-error {
   color: rgba(255, 120, 120, 0.9) !important;
+}
+
+/* share code group */
+#share-code-group {
+  margin-top: 8px;
+}
+
+#share-code-group label {
+  margin-bottom: 4px;
+}
+
+/* 项目导出对话框 */
+.pv-project-export-dialog {
+  max-width: 300px;
+}
+
+.pv-project-export-dialog .effect-toggle {
+  margin: 8px 0;
+}
+
+.pv-project-export-dialog .effect-toggle input {
+  margin-right: 8px;
 }

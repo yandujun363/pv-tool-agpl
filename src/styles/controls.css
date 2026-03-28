@@ -26,6 +26,17 @@ select, input[type='text'], textarea {
   transition: border-color 0.2s;
 }
 
+select:focus,
+input[type='text']:focus,
+textarea:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+select option {
+  background: #222;
+  color: #fff;
+}
+
 textarea {
   resize: none;
   min-height: 30px;
@@ -99,4 +110,31 @@ input[type='range'] {
   color: rgba(255, 255, 255, 0.6);
   min-width: 28px;
   text-align: right;
+}
+
+/* 复制 URL 行 */
+.copy-url-row {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 4px !important;
+}
+
+.copy-url-btn {
+  flex: 1;
+}
+
+/* 标签带操作按钮 */
+.label-with-action {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.btn-label {
+  padding: 2px 8px;
+  font-size: 0.65rem;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: 0;
 }

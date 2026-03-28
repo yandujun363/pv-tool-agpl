@@ -56,3 +56,25 @@
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.75rem;
 }
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .init-card {
+    padding: 20px 24px;
+    min-width: 240px;
+  }
+  
+  .init-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+  }
+  
+  .init-title {
+    font-size: 0.9rem;
+  }
+  
+  .init-desc {
+    font-size: 0.7rem;
+  }
+}
