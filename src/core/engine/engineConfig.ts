@@ -33,7 +33,7 @@ import type { PVEngine } from "./index";
 export class EngineConfig {
   private engine: PVEngine;
 
-  private activeEffects: BaseEffect[] = [];
+  public activeEffects: BaseEffect[] = [];
   private palette: ColorPalette = {
     background: "#ffffff",
     primary: "#000000",
@@ -96,7 +96,7 @@ export class EngineConfig {
 
       this.engine.media.outlineEnabled =
         template.features?.mediaOutline ?? false;
-      this.engine["_setMotionDetectionEnabled"](
+      this.engine._setMotionDetectionEnabled(
         template.features?.motionDetection ?? false,
       );
       this.engine.media.invertMediaEnabled =
@@ -109,7 +109,7 @@ export class EngineConfig {
       if (
         template.features?.autoExtractColors &&
         this.engine.media.mediaElementRef &&
-        !this.engine["_extractingColors"]
+        !this.engine.extractingColors
       ) {
         callbacks.onApplyExtractedColors();
       }

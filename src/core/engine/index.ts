@@ -60,7 +60,7 @@ export class PVEngine {
 
   // 其他依赖
   private motionDetector: MotionDetector | null = null;
-  private extractingColors = false;
+  public extractingColors = false;
 
   constructor() {
     const app = new PIXI.Application();
@@ -706,7 +706,7 @@ export class PVEngine {
     }
   }
 
-  private _update(time: number, deltaTime: number): void {
+  private update(time: number, deltaTime: number): void {
     const lyricClock = this.external.isExternalActive
       ? this.external.currentPlaybackTime
       : this.beat.isAudioMode
@@ -856,7 +856,7 @@ export class PVEngine {
    * 获取效果数量
    */
   getActiveEffectsCount(): number {
-    return this.config["activeEffects"]?.length || 0;
+    return this.config.activeEffects?.length || 0;
   }
 
   /**
@@ -873,6 +873,10 @@ export class PVEngine {
 
   _setMotionDetectionEnabled(val: boolean): void {
     this.state.motionDetectionEnabled = val;
+  }
+
+  _updateFrame(time: number, deltaTime: number): void {
+    this.update(time, deltaTime);
   }
 }
 

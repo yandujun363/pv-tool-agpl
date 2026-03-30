@@ -97,9 +97,9 @@ export class EngineCore {
       this.engine.playback.lastFrameTime = now;
 
       const currentTime = playbackUpdateFn(dt);
-      this.engine["_setTime"](currentTime);
+      this.engine._setTime(currentTime);
 
-      this.engine["_update"](currentTime, ticker.deltaTime / 60);
+      this.engine._updateFrame(currentTime, ticker.deltaTime / 60);
     });
   }
 
