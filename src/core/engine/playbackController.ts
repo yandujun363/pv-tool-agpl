@@ -27,7 +27,7 @@ import { EngineModule } from './engineModule';
 export class PlaybackController extends EngineModule {
   private _time = 0;
   private _paused = false;
-  _lastFrameTime = 0;
+  public lastFrameTime = 0;
   private _playbackTime = 0;
   
   private _shake = 0;
@@ -38,7 +38,7 @@ export class PlaybackController extends EngineModule {
   private _beatReactivity = 0.5;
 
   init(): void {
-    this._lastFrameTime = performance.now();
+    this.lastFrameTime = performance.now();
   }
 
   destroy(): void {}
@@ -52,7 +52,7 @@ export class PlaybackController extends EngineModule {
   
   resume(): void {
     this._paused = false;
-    this._lastFrameTime = performance.now();
+    this.lastFrameTime = performance.now();
     this.engine.beat.resume();
   }
   
@@ -92,13 +92,22 @@ export class PlaybackController extends EngineModule {
   set tilt(val: number) { this._tilt = val; }
   
   get glitch(): number { return this._glitch; }
-  set glitch(val: number) { this._glitch = val; this.engine['glitchFilter'].intensity = val; }
+  set glitch(val: number) { 
+    this._glitch = val; 
+    const glitchFilter = this.engine.getGlitchFilter();
+    if (glitchFilter) {
+      glitchFilter.intensity = val;
+    }
+  }
   
   get hueShift(): number { return this._hueShift; }
   set hueShift(val: number) { 
     this._hueShift = val; 
-    this.engine['hueFilter'].matrix = [1,0,0,0,0, 0,1,0,0,0, 0,0,1,0,0, 0,0,0,1,0];
-    this.engine['hueFilter'].hue(val, false);
+    const hueFilter = this.engine.getHueFilter();
+    if (hueFilter) {
+      hueFilter.matrix = [1,0,0,0,0, 0,1,0,0,0, 0,0,1,0,0, 0,0,0,1,0];
+      hueFilter.hue(val, false);
+    }
   }
   
   get beatReactivity(): number { return this._beatReactivity; }

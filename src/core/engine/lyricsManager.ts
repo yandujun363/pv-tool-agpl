@@ -134,7 +134,7 @@ export class LyricsManager extends EngineModule {
     return {
       userText: this.userText,
       textSegments: [...this.textSegments],
-      currentText: this.getDisplayText(this.engine['_time']),
+      currentText: this.getDisplayText(this.engine.getInternalTime()),
       segmentDuration: this._segmentDuration,
       timeline: this.lyricTimeline ? [...this.lyricTimeline] : null,
       offset: this.lyricOffsetSeconds,
