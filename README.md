@@ -1,3 +1,13 @@
+# 项目停止维护
+
+由于本项目过于屎山，包括但不限于
+
+- 引擎模块互相私有访问
+- UI和引擎内嵌严重，无法使用VUE特性
+- 以及其它乱七八糟的屎代码
+
+所以社区版的负责人也就是我`yandujun363`不打算继续维护了，目前项目情况就是UI拆成了VUE模板（当HTML模块使用，不是VUE的特性），样式文件拆分了，引擎拆了部分，但是仍然互相私有访问，还有其它乱七八糟问题，所以这边不打算费时间去维护了，有啥要改的提个PR吧，测试没问题并且不是屎山代码的情况下我会合并的，本人打算回去看VTB了。
+
 # PV Tool — AGPL Community Edition
 
 > **A community-maintained continuation of the last AGPL-licensed version of PV Tool.**
