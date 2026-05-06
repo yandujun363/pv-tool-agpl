@@ -28,6 +28,7 @@ import type {
   UpdateContext,
   LyricLine,
   LayerType,
+  MotionTargetInfo,
 } from "../types";
 import { extractDominantColors } from "../colorExtractor";
 import { BeatProvider } from "../beatProvider";
@@ -182,7 +183,7 @@ export class PVEngine {
     this.resolution.scaleMode = mode;
   }
 
-  private applyResolution(): void {
+  applyResolution(): void {
     this.resolution.applyResolution();
   }
 
@@ -295,17 +296,17 @@ export class PVEngine {
   // ========== Getter/Setter 委托 ==========
 
   get animationSpeed() {
-    return this.state.animationSpeed;
+    return this.state.animationSpeedValue;
   }
   set animationSpeed(val: number) {
-    this.state.animationSpeed = val;
+    this.state.animationSpeedValue = val;
   }
 
   get motionIntensity() {
-    return this.state.motionIntensity;
+    return this.state.motionIntensityValue;
   }
   set motionIntensity(val: number) {
-    this.state.motionIntensity = val;
+    this.state.motionIntensityValue = val;
   }
 
   get segmentDuration() {
@@ -316,17 +317,17 @@ export class PVEngine {
   }
 
   get effectOpacity() {
-    return this.state.effectOpacity;
+    return this.state.effectOpacityValue;
   }
   set effectOpacity(val: number) {
-    this.state.effectOpacity = val;
+    this.state.effectOpacityValue = val;
   }
 
   get alphaMode() {
-    return this.state.alphaMode;
+    return this.state.alphaModeValue;
   }
   set alphaMode(val: boolean) {
-    this.state.alphaMode = val;
+    this.state.alphaModeValue = val;
   }
 
   get nowPlayingListening() {
@@ -417,9 +418,7 @@ export class PVEngine {
         this.config.paletteValue.accent,
         this.config.paletteValue.text,
       );
-      this.core.app.renderer.background.color = new PIXI.Color(
-        color,
-      ).toNumber();
+      this.core.app.renderer.background.color = new PIXI.Color(color).toNumber();
       this.core.updateBgFill(color);
     } else if (this.config.currentTemplateValue) {
       const bg = this.config.currentTemplateValue.palette.background;
@@ -474,192 +473,18 @@ export class PVEngine {
 
   // ========== 配置管理 ==========
 
+  /**
+   * 获取完整配置
+   */
   getConfig(): UnifiedConfig {
-    const lyricConfig = this.lyrics.getConfig();
-
-    return {
-      template: {
-        name: this.config.currentTemplateValue?.name || "",
-        palette: { ...this.config.paletteValue },
-        effects:
-          this.config.currentTemplateValue?.effects?.map((e) => ({ ...e })) ||
-          [],
-        bpm: this.beat.bpm,
-        animationSpeed: this.state.animationSpeed,
-        bgOpacity: this.state.effectOpacity,
-        postfx: this.playback.getPostFXConfig(),
-        features: {
-          mediaOutline: this.media.outlineEnabled,
-          autoExtractColors:
-            this.config.currentTemplateValue?.features?.autoExtractColors ??
-            false,
-          motionDetection: this.state.motionDetectionEnabled,
-          invertMedia: this.media.invertMediaEnabled,
-          thresholdMedia: this.media.thresholdMediaEnabled,
-        },
-      },
-      playback: this.playback.getConfig(),
-      text: {
-        userText: lyricConfig.userText,
-        textSegments: lyricConfig.textSegments,
-        currentText: lyricConfig.currentText,
-        segmentDuration: lyricConfig.segmentDuration,
-      },
-      lyric: {
-        timeline: lyricConfig.timeline,
-        offset: lyricConfig.offset,
-        srtTimeline: lyricConfig.srtTimeline,
-      },
-      beat: {
-        bpm: this.beat.bpm,
-        reactivity: this.playback.beatReactivity,
-        useAudio: this.beat.isAudioMode,
-        currentIntensity: this.beat.getIntensity(this.state.time),
-      },
-      media: this.media.getMediaConfig(),
-      effects: {
-        alphaMode: this.state.alphaMode,
-        effectOpacity: this.state.effectOpacity,
-        motionIntensity: this.state.motionIntensity,
-        beatReactivity: this.playback.beatReactivity,
-      },
-      postfx: this.playback.getPostFXConfig(),
-      features: {
-        mediaOutline: this.media.outlineEnabled,
-        autoExtractColors:
-          this.config.currentTemplateValue?.features?.autoExtractColors ??
-          false,
-        motionDetection: this.state.motionDetectionEnabled,
-        invertMedia: this.media.invertMediaEnabled,
-        thresholdMedia: this.media.thresholdMediaEnabled,
-        alphaMode: this.state.alphaMode,
-      },
-      nowPlaying: this.external.getNowPlayingConfig(),
-      wesingCap: this.external.getWesingCapConfig(),
-      render: {
-        screenWidth: this.core.app.screen.width,
-        screenHeight: this.core.app.screen.height,
-        resolution: this.resolution.currentResolution,
-        canvasColor: this.config.bgColorOverride,
-        targetResolution: this.resolution.targetResolution,
-        targetFps: this.fps.targetFps,
-        scaleMode: this.resolution.scaleMode,
-      },
-      motion: {
-        enabled: this.state.motionDetectionEnabled,
-        targets: [...this.state.motionTargetsValue],
-        intensity: this.state.motionIntensity,
-      },
-    };
+    return this.config.getUnifiedConfig();
   }
 
+  /**
+   * 应用配置
+   */
   applyConfig(config: Partial<UnifiedConfig>): void {
-    // 模板配置
-    if (config.template) {
-      const tpl = config.template;
-      const tempTemplate: TemplateConfig = {
-        name: tpl.name,
-        palette: tpl.palette,
-        effects: tpl.effects,
-        bpm: tpl.bpm,
-        animationSpeed: tpl.animationSpeed,
-        bgOpacity: tpl.bgOpacity,
-        postfx: tpl.postfx,
-        features: tpl.features,
-      };
-      this.loadTemplate(tempTemplate);
-    }
-
-    // 播放配置
-    if (config.playback) {
-      this.playback.applyConfig(config.playback);
-    }
-
-    // 文本配置
-    if (config.text) {
-      this.lyrics.applyConfig(config.text);
-    }
-
-    // 歌词配置
-    if (config.lyric) {
-      const lyricConfig = { ...config.lyric };
-      if (lyricConfig.srtTimeline) {
-        const convertedSrt = lyricConfig.srtTimeline.map((entry, idx) => ({
-          index: idx + 1,
-          startMs: entry.startMs,
-          endMs: entry.endMs,
-          text: entry.text,
-        }));
-        this.lyrics.setSrtTimeline(convertedSrt);
-      } else if (lyricConfig.srtTimeline === null) {
-        this.lyrics.setSrtTimeline(null);
-      }
-
-      if (lyricConfig.timeline !== undefined) {
-        if (lyricConfig.timeline && lyricConfig.timeline.length > 0) {
-          this.lyrics.setLyricTimeline(lyricConfig.timeline);
-        } else {
-          this.lyrics.clearLyricTimeline();
-        }
-      }
-      if (lyricConfig.offset !== undefined) {
-        this.lyrics.lyricOffset = lyricConfig.offset;
-      }
-    }
-
-    // 节拍配置
-    if (config.beat) {
-      if (config.beat.bpm !== undefined) this.beat.bpm = config.beat.bpm;
-      if (config.beat.reactivity !== undefined)
-        this.beatReactivity = config.beat.reactivity;
-    }
-
-    // 效果配置
-    if (config.effects) {
-      if (config.effects.alphaMode !== undefined)
-        this.alphaMode = config.effects.alphaMode;
-      if (config.effects.effectOpacity !== undefined)
-        this.effectOpacity = config.effects.effectOpacity;
-      if (config.effects.motionIntensity !== undefined)
-        this.motionIntensity = config.effects.motionIntensity;
-    }
-
-    // 后处理配置
-    if (config.postfx) {
-      this.playback.applyPostFXConfig(config.postfx);
-    }
-
-    // 媒体配置
-    if (config.media && config.media.hasMedia && config.media.url) {
-      if (
-        config.media.offsetX !== undefined ||
-        config.media.offsetY !== undefined
-      ) {
-        this.setMediaOffset(
-          config.media.offsetX || 0,
-          config.media.offsetY || 0,
-        );
-      }
-      if (config.media.scale !== undefined) {
-        this.setMediaScale(config.media.scale);
-      }
-    }
-
-    // 渲染配置
-    if (config.render?.canvasColor !== undefined) {
-      this.canvasColor = config.render.canvasColor;
-    }
-    if (config.render?.targetResolution !== undefined) {
-      this.targetResolution = config.render.targetResolution;
-    }
-    if (config.render?.targetFps !== undefined) {
-      this.targetFps = config.render.targetFps;
-    }
-    if (config.render?.scaleMode !== undefined) {
-      this.scaleMode = config.render.scaleMode;
-    }
-
-    this.external.applyConfig(config);
+    this.config.applyUnifiedConfig(config);
   }
 
   destroy() {
@@ -736,8 +561,8 @@ export class PVEngine {
       screenWidth: this.core.app.screen.width,
       screenHeight: this.core.app.screen.height,
       palette: this.config.paletteValue,
-      animationSpeed: this.state.animationSpeed,
-      motionIntensity: this.state.motionIntensity,
+      animationSpeed: this.animationSpeed,
+      motionIntensity: this.motionIntensity,
       currentText: this.lyrics.getDisplayText(lyricClock),
       beatIntensity:
         this.beat.getIntensity(time) * this.playback.beatReactivity,
@@ -760,7 +585,8 @@ export class PVEngine {
 
     this.core.incrementTick();
 
-    const n = this.config["activeEffects"]?.length || 0;
+    // 使用公共方法获取效果数量
+    const n = this.config.activeEffects.length;
     const heavySkip = n > 15 ? 3 : n > 8 ? 2 : 0;
 
     this.config.updateEffects(ctx, heavySkip);
@@ -878,6 +704,35 @@ export class PVEngine {
   _updateFrame(time: number, deltaTime: number): void {
     this.update(time, deltaTime);
   }
+
+  /**
+   * 获取运动目标列表（供内部模块使用）
+   */
+  get motionTargets(): MotionTargetInfo[] {
+    return this.state.motionTargetsValue;
+  }
+
+  /**
+   * 获取运动检测是否启用（供内部模块使用）
+   */
+  get motionDetectionEnabled(): boolean {
+    return this.state.motionDetectionEnabledValue;
+  }
+
+  /**
+   * 设置运动检测启用状态（供内部模块使用）
+   */
+  setMotionDetectionEnabled(val: boolean): void {
+    this.state.motionDetectionEnabledValue = val;
+  }
+
+  /**
+   * 获取内部 tick 计数（供效果管理器使用）
+   */
+  getInternalTick(): number {
+    return this.core.tick;
+  }
+
 }
 
 // 导出模块以便其他文件使用

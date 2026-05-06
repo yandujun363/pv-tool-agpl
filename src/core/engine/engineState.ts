@@ -119,4 +119,44 @@ export class EngineState {
   set time(val: number) {
     this._time = val;
   }
+
+  get motionDetectionEnabledValue(): boolean {
+    return this._motionDetectionEnabled;
+  }
+
+  set motionDetectionEnabledValue(val: boolean) {
+    this._motionDetectionEnabled = val;
+  }
+
+  get animationSpeedValue(): number {
+    return this._animationSpeed;
+  }
+
+  set animationSpeedValue(val: number) {
+    this._animationSpeed = val;
+  }
+
+  get motionIntensityValue(): number {
+    return this._motionIntensity;
+  }
+
+  set motionIntensityValue(val: number) {
+    this._motionIntensity = val;
+  }
+
+  get effectOpacityValue(): number {
+    return this._effectOpacity;
+  }
+
+  set effectOpacityValue(val: number) {
+    this._effectOpacity = val;
+  }
+
+  get alphaModeValue(): boolean {
+    return this._alphaMode;
+  }
+
+  set alphaModeValue(val: boolean) {
+    this._alphaMode = val;
+  }
 }
