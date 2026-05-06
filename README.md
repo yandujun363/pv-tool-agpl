@@ -1,3 +1,15 @@
+# 项目维护相关问题
+
+由于本项目过于屎山，包括但不限于
+
+- 引擎模块互相私有访问
+- UI和引擎内嵌严重，无法使用VUE特性
+- 以及其它乱七八糟的屎代码
+
+所以重构基本上很难，加上我平时没什么时间，可能很少更新，说实话如果继续塞新功能的话，可能会继续屎山，但没办法，想重构的太多，但是引擎和UI融合过于严重，动不了一点。~~只能继续拉屎~~  
+
+不过话又说回来了，如果你的确有代码修改，如果质量可以的化，可以选择提交PR，我一般都会看
+
 # PV Tool — AGPL Community Edition
 
 > **A community-maintained continuation of the last AGPL-licensed version of PV Tool.**
