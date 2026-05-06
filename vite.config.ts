@@ -42,7 +42,7 @@ export default defineConfig({
       }
     },
     chunkSizeWarningLimit: 800,
-    cssCodeSplit: true,
+    cssCodeSplit: false,
     sourcemap: true
   },
   optimizeDeps: {
