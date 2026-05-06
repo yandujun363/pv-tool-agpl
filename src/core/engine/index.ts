@@ -324,10 +324,10 @@ export class PVEngine {
   }
 
   get alphaMode() {
-    return this.state.alphaModeValue;
+    return this.state.alphaMode;
   }
   set alphaMode(val: boolean) {
-    this.state.alphaModeValue = val;
+    this.state.alphaMode = val;
   }
 
   get nowPlayingListening() {

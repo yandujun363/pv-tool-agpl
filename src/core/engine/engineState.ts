@@ -150,13 +150,6 @@ export class EngineState {
 
   set effectOpacityValue(val: number) {
     this._effectOpacity = val;
-  }
-
-  get alphaModeValue(): boolean {
-    return this._alphaMode;
-  }
-
-  set alphaModeValue(val: boolean) {
-    this._alphaMode = val;
+    this.engine.core.bgFill.alpha = val;
   }
 }
