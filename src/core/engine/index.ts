@@ -317,10 +317,10 @@ export class PVEngine {
   }
 
   get effectOpacity() {
-    return this.state.effectOpacityValue;
+    return this.state.effectOpacity;
   }
   set effectOpacity(val: number) {
-    this.state.effectOpacityValue = val;
+    this.state.effectOpacity = val;
   }
 
   get alphaMode() {

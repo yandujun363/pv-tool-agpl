@@ -143,13 +143,4 @@ export class EngineState {
   set motionIntensityValue(val: number) {
     this._motionIntensity = val;
   }
-
-  get effectOpacityValue(): number {
-    return this._effectOpacity;
-  }
-
-  set effectOpacityValue(val: number) {
-    this._effectOpacity = val;
-    this.engine.core.bgFill.alpha = val;
-  }
 }
