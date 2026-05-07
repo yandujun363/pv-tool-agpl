@@ -44,18 +44,19 @@ export class MediaController extends EngineModule {
   }
 
   async addMedia(file: File, mode: 'fit' | 'free' = 'fit'): Promise<void> {
-    if (this.engine['_loading']) return;
-    this.engine['_loading'] = true;
+    if (this.engine.isLoading()) return;
+    this.engine.setLoading(true);
 
     const url = URL.createObjectURL(file);
 
     try {
       this._mediaFile = file;
-      const mediaLayer = this.engine['layers'].get('media')!;
+      const mediaLayer = this.engine.getLayers().get('media')!;
       this.destroyOutline();
-      mediaLayer.removeChildren().forEach(c => c.destroy({ children: true }));
+      mediaLayer.removeChildren().forEach((c: any) => c.destroy({ children: true }));
 
       const isVideo = file.type.startsWith('video/');
+      const app = this.engine.getApp();
 
       if (isVideo) {
         const video = document.createElement('video');
@@ -72,21 +73,21 @@ export class MediaController extends EngineModule {
 
         if (mode === 'fit') {
           const scale = Math.max(
-            this.engine['app'].screen.width / video.videoWidth,
-            this.engine['app'].screen.height / video.videoHeight
+            app.screen.width / video.videoWidth,
+            app.screen.height / video.videoHeight
           );
           sprite.scale.set(scale);
         } else {
           const scale = Math.min(
-            this.engine['app'].screen.width * 0.6 / video.videoWidth,
-            this.engine['app'].screen.height * 0.6 / video.videoHeight
+            app.screen.width * 0.6 / video.videoWidth,
+            app.screen.height * 0.6 / video.videoHeight
           );
           sprite.scale.set(scale);
         }
 
         sprite.anchor.set(0.5);
-        sprite.x = this.engine['app'].screen.width / 2;
-        sprite.y = this.engine['app'].screen.height / 2;
+        sprite.x = app.screen.width / 2;
+        sprite.y = app.screen.height / 2;
         mediaLayer.addChild(sprite);
       } else {
         const img = new Image();
@@ -118,48 +119,50 @@ export class MediaController extends EngineModule {
 
         if (mode === 'fit') {
           const scale = Math.max(
-            this.engine['app'].screen.width / sprite.texture.width,
-            this.engine['app'].screen.height / sprite.texture.height
+            app.screen.width / sprite.texture.width,
+            app.screen.height / sprite.texture.height
           );
           sprite.scale.set(scale);
         } else {
           const scale = Math.min(
-            this.engine['app'].screen.width * 0.6 / sprite.texture.width,
-            this.engine['app'].screen.height * 0.6 / sprite.texture.height
+            app.screen.width * 0.6 / sprite.texture.width,
+            app.screen.height * 0.6 / sprite.texture.height
           );
           sprite.scale.set(scale);
         }
 
         sprite.anchor.set(0.5);
-        sprite.x = this.engine['app'].screen.width / 2;
-        sprite.y = this.engine['app'].screen.height / 2;
+        sprite.x = app.screen.width / 2;
+        sprite.y = app.screen.height / 2;
         mediaLayer.addChild(sprite);
       }
 
       this.syncOutline();
-      this.engine['syncMotionDetector']();
+      this.engine.syncMotionDetectorInternal();
     } catch (err) {
       console.warn('[MediaController] addMedia failed:', err);
     } finally {
       URL.revokeObjectURL(url);
-      this.engine['_loading'] = false;
+      this.engine.setLoading(false);
     }
   }
 
   setMediaOffset(dx: number, dy: number): void {
     const s = this.getMediaSprite();
     if (!s) return;
-    s.x = this.engine['app'].screen.width / 2 + dx;
-    s.y = this.engine['app'].screen.height / 2 + dy;
+    const app = this.engine.getApp();
+    s.x = app.screen.width / 2 + dx;
+    s.y = app.screen.height / 2 + dy;
     this.syncOutline();
   }
 
   setMediaScale(scale: number): void {
     const s = this.getMediaSprite();
     if (!s) return;
+    const app = this.engine.getApp();
     const base = Math.max(
-      this.engine['app'].screen.width / s.texture.width,
-      this.engine['app'].screen.height / s.texture.height,
+      app.screen.width / s.texture.width,
+      app.screen.height / s.texture.height,
     );
     s.scale.set(base * scale);
     this.syncOutline();
@@ -168,20 +171,21 @@ export class MediaController extends EngineModule {
   getMediaState(): { offsetX: number; offsetY: number; scale: number } | null {
     const s = this.getMediaSprite();
     if (!s) return null;
+    const app = this.engine.getApp();
     const base = Math.max(
-      this.engine['app'].screen.width / s.texture.width,
-      this.engine['app'].screen.height / s.texture.height,
+      app.screen.width / s.texture.width,
+      app.screen.height / s.texture.height,
     );
     return {
-      offsetX: s.x - this.engine['app'].screen.width / 2,
-      offsetY: s.y - this.engine['app'].screen.height / 2,
+      offsetX: s.x - app.screen.width / 2,
+      offsetY: s.y - app.screen.height / 2,
       scale: s.scale.x / base,
     };
   }
 
   getMediaConfig() {
     const state = this.getMediaState();
-    const mediaLayer = this.engine['layers'].get('media');
+    const mediaLayer = this.engine.getLayers().get('media');
     const hasMedia = !!(mediaLayer && mediaLayer.children.length > 0);
     
     const type: 'video' | 'image' | null = this.mediaElement instanceof HTMLVideoElement ? 'video' 
@@ -218,7 +222,7 @@ export class MediaController extends EngineModule {
   }
 
   private getMediaSprite(): PIXI.Sprite | null {
-    const layer = this.engine['layers'].get('media');
+    const layer = this.engine.getLayers().get('media');
     return (layer?.children[0] as PIXI.Sprite) ?? null;
   }
 
@@ -228,7 +232,7 @@ export class MediaController extends EngineModule {
       return;
     }
 
-    const mediaLayer = this.engine['layers'].get('media')!;
+    const mediaLayer = this.engine.getLayers().get('media')!;
     const mediaSprite = mediaLayer.children[0] as PIXI.Sprite | undefined;
     if (!mediaSprite) return;
 
@@ -259,7 +263,7 @@ export class MediaController extends EngineModule {
   }
 
   private syncInvertFilter(): void {
-    const mediaLayer = this.engine['layers'].get('media')!;
+    const mediaLayer = this.engine.getLayers().get('media')!;
     if (this._thresholdMediaEnabled) {
       const desat = new PIXI.ColorMatrixFilter();
       desat.desaturate();

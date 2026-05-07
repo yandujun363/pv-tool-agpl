@@ -145,7 +145,7 @@ export class ExternalSourceManager extends EngineModule {
     this._npTime = 0;
     this._npDuration = 0;
     this._npTrack = null;
-    this._npSavedUserText = this.engine['lyrics'].userTextValue;
+    this._npSavedUserText = this.engine.lyrics.userTextValue;
 
     this.npProvider = new NowPlayingProvider({
       onTrack: (track) => {
@@ -212,7 +212,7 @@ export class ExternalSourceManager extends EngineModule {
     this._nwcTime = 0;
     this._nwcDuration = 0;
     this._nwcSongTitle = '';
-    this._nwcSavedUserText = this.engine['lyrics'].userTextValue;
+    this._nwcSavedUserText = this.engine.lyrics.userTextValue;
 
     this.nwcProvider = new WesingCapProvider({
       onSongInfo: (name, _singer, title) => {
